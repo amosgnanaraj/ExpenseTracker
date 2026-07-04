@@ -1,0 +1,62 @@
+@model ExpenseTracker.Models.EPF
+@{
+    ViewData["Title"] = "Add EPF";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-wallet2 me-2"></i>New EPF Account</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="CreateEPF">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="UAN" class="form-label fw-bold small text-uppercase">UAN / Account Number</label>
+                                <input asp-for="UAN" class="form-control border-success shadow-sm rounded-3" placeholder="e.g. 100987654321" required />
+                                <span asp-validation-for="UAN" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="MemberId" class="form-label fw-bold small text-uppercase">Member ID (Optional)</label>
+                                <input asp-for="MemberId" class="form-control border-success shadow-sm rounded-3" placeholder="e.g. MHBAN0012345" />
+                                <span asp-validation-for="MemberId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-12">
+                                <label asp-for="EmployeeContribution" class="form-label fw-bold small text-uppercase">Total Employee Contribution (Your Invested Capital)</label>
+                                <input asp-for="EmployeeContribution" class="form-control border-success shadow-sm rounded-3" type="number" step="0.01" required />
+                                <span asp-validation-for="EmployeeContribution" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EmployerContribution" class="form-label fw-bold small text-uppercase">Total Employer Contribution</label>
+                                <input asp-for="EmployerContribution" class="form-control border-success shadow-sm rounded-3" type="number" step="0.01" required />
+                                <span asp-validation-for="EmployerContribution" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="InterestEarned" class="form-label fw-bold small text-uppercase">Total Accumulated Interest</label>
+                                <input asp-for="InterestEarned" class="form-control border-success shadow-sm rounded-3" type="number" step="0.01" required />
+                                <span asp-validation-for="InterestEarned" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="TransferIn" class="form-label fw-bold small text-uppercase">Transferred In (Previous Accounts)</label>
+                                <input asp-for="TransferIn" class="form-control border-success shadow-sm rounded-3" type="number" step="0.01" value="0.00" required />
+                                <span asp-validation-for="TransferIn" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PurchaseDate" class="form-label fw-bold small text-uppercase">Statement Update Date</label>
+                                <input asp-for="PurchaseDate" class="form-control border-success shadow-sm rounded-3" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="PurchaseDate" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12 mt-4 text-end">
+                                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 me-2">Cancel</a>
+                                <button type="submit" class="btn btn-success text-white rounded-pill px-5 shadow">Save EPF</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

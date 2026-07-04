@@ -1,0 +1,87 @@
+@model IEnumerable<ExpenseTracker.Models.NPS>
+@{
+    var activeType = "NPS";
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th class="ps-4">
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.NameSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Scheme Name
+                        <i class="bi @(ViewBag.CurrentSort == null || ViewBag.CurrentSort == "" ? "bi-sort-alpha-down" : (ViewBag.CurrentSort == "name_desc" ? "bi-sort-alpha-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.QtySortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Total Units
+                        <i class="bi @(ViewBag.CurrentSort == "Qty" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "qty_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.PriceSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Current NAV
+                        <i class="bi @(ViewBag.CurrentSort == "Price" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "price_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.ValueSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Current Value
+                        <i class="bi @(ViewBag.CurrentSort == "Value" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "value_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th class="text-end pe-4 text-secondary">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold">@item.SchemeName</div>
+                    </td>
+                    <td>@item.TotalUnits.ToString("N4")</td>
+                    <td>@item.CurrentNAV.ToString("C4")</td>
+                    <td>@item.CurrentValue.ToString("C")</td>
+                    <td class="text-end pe-4">
+                        <div class="btn-group">
+                            <a asp-action="EditNPS" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary rounded-pill me-2 edit-investment-link">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="DeleteNPS" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this NPS record?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+@{
+    var totalInvested = Model.Sum(x => x.TotalInvested);
+    var totalValue = Model.Sum(x => x.CurrentValue);
+    var totalPL = totalValue - totalInvested;
+    var plPercent = totalInvested != 0 ? (totalPL / totalInvested) * 100 : 0;
+}
+        <tfoot class="table-light border-top">
+            <tr>
+                <td colspan="3" class="text-end fw-bold pe-4">Portfolio Total:</td>
+                <td class="fw-bold">
+                    <div class="text-dark">@totalValue.ToString("C")</div>
+                    <div class="small text-muted fw-normal">Invested: @totalInvested.ToString("C")</div>
+                </td>
+                <td class="text-end pe-4 border-start">
+                    <div class="fw-bold @(totalPL >= 0 ? "text-success" : "text-danger")">
+                        @(totalPL >= 0 ? "+" : "")@totalPL.ToString("C")
+                    </div>
+                    <div class="small @(totalPL >= 0 ? "text-success" : "text-danger") fw-bold">
+                        @(totalPL >= 0 ? "+" : "")@plPercent.ToString("N2")%
+                    </div>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

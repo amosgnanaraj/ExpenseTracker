@@ -1,0 +1,242 @@
+:root {
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-color: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --input-bg: #ffffff;
+  --input-color: #0f172a;
+  --input-border: #cbd5e1;
+  --nav-bg: #ffffff;
+  --link-color: #6366f1;
+  --table-hover: rgba(0, 0, 0, 0.04);
+  --table-striped: rgba(0, 0, 0, 0.02);
+  --dropdown-bg: #ffffff;
+  --dropdown-link-hover: #f1f5f9;
+}
+
+html[data-theme="dark"] {
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --text-color: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --input-bg: #1e293b;
+  --input-color: #f8fafc;
+  --input-border: #475569;
+  --nav-bg: #1e293b;
+  --link-color: #818cf8;
+  --table-hover: rgba(255, 255, 255, 0.06);
+  --table-striped: rgba(255, 255, 255, 0.03);
+  --dropdown-bg: #1e293b;
+  --dropdown-link-hover: #334155;
+}
+
+html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin-bottom: 60px;
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem var(--card-bg), 0 0 0 0.25rem #258cfb;
+}
+
+/* --- Theme Transitions --- */
+body, .card, .navbar, .form-control, .form-select, .table, th, td, a, .modal-content, .list-group-item {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* --- Dark Mode Overrides --- */
+html[data-theme="dark"] body {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Text overrides */
+html[data-theme="dark"] .text-dark {
+  color: var(--text-color) !important;
+}
+html[data-theme="dark"] .text-muted {
+  color: var(--text-muted) !important;
+}
+html[data-theme="dark"] .text-secondary {
+  color: var(--text-muted) !important;
+}
+html[data-theme="dark"] a:not(.btn) {
+  color: var(--link-color) !important;
+}
+html[data-theme="dark"] a:not(.btn):hover {
+  color: #a5b4fc !important;
+}
+
+/* Background overrides */
+html[data-theme="dark"] .bg-white {
+  background-color: var(--card-bg) !important;
+}
+html[data-theme="dark"] .bg-light {
+  background-color: var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Border overrides */
+html[data-theme="dark"] .border,
+html[data-theme="dark"] .border-top,
+html[data-theme="dark"] .border-bottom,
+html[data-theme="dark"] .border-start,
+html[data-theme="dark"] .border-end {
+  border-color: var(--border-color) !important;
+}
+
+/* Navbar */
+html[data-theme="dark"] .navbar {
+  background-color: var(--nav-bg) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .25) !important;
+}
+html[data-theme="dark"] .navbar-brand {
+  color: var(--link-color) !important;
+}
+html[data-theme="dark"] .navbar .nav-link {
+  color: var(--text-color) !important;
+}
+html[data-theme="dark"] .navbar .nav-link:hover {
+  color: var(--link-color) !important;
+}
+
+/* Cards */
+html[data-theme="dark"] .card {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+}
+html[data-theme="dark"] .card-header,
+html[data-theme="dark"] .card-footer {
+  border-color: var(--border-color) !important;
+  background-color: transparent !important;
+  color: var(--text-color) !important;
+}
+html[data-theme="dark"] .insight-card {
+  background: var(--card-bg) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1) !important;
+}
+html[data-theme="dark"] .insight-card:hover {
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3) !important;
+}
+
+/* Forms & Inputs */
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select {
+  background-color: var(--input-bg) !important;
+  color: var(--input-color) !important;
+  border-color: var(--input-border) !important;
+}
+html[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] .form-select:focus {
+  background-color: var(--input-bg) !important;
+  color: var(--input-color) !important;
+  border-color: var(--link-color) !important;
+  box-shadow: 0 0 0 0.25rem rgba(129, 140, 248, 0.25) !important;
+}
+html[data-theme="dark"] .form-control::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.7;
+}
+html[data-theme="dark"] .input-group-text {
+  background-color: var(--border-color) !important;
+  color: var(--text-color) !important;
+  border-color: var(--input-border) !important;
+}
+
+/* Tables */
+html[data-theme="dark"] .table {
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+html[data-theme="dark"] .table th,
+html[data-theme="dark"] .table td {
+  border-bottom-color: var(--border-color) !important;
+}
+html[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--table-striped) !important;
+}
+html[data-theme="dark"] .table-hover tbody tr:hover {
+  background-color: var(--table-hover) !important;
+  color: var(--text-color) !important;
+}
+
+/* Dropdown Menu */
+html[data-theme="dark"] .dropdown-menu {
+  background-color: var(--dropdown-bg) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+}
+html[data-theme="dark"] .dropdown-item {
+  color: var(--text-color) !important;
+}
+html[data-theme="dark"] .dropdown-item:hover {
+  background-color: var(--dropdown-link-hover) !important;
+  color: var(--text-color) !important;
+}
+
+/* Modals */
+html[data-theme="dark"] .modal-content {
+  background-color: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+html[data-theme="dark"] .modal-header,
+html[data-theme="dark"] .modal-footer {
+  border-color: var(--border-color) !important;
+}
+
+/* List Groups */
+html[data-theme="dark"] .list-group-item {
+  background-color: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Soft background variations for badges / micro alerts */
+html[data-theme="dark"] .bg-soft-primary { background-color: rgba(99, 102, 241, 0.2) !important; }
+html[data-theme="dark"] .bg-soft-info { background-color: rgba(6, 182, 212, 0.2) !important; }
+html[data-theme="dark"] .bg-soft-warning { background-color: rgba(245, 158, 11, 0.2) !important; }
+html[data-theme="dark"] .bg-soft-success { background-color: rgba(16, 185, 129, 0.2) !important; }
+html[data-theme="dark"] .bg-soft-danger { background-color: rgba(244, 63, 94, 0.2) !important; }
+
+/* Custom dashboard elements */
+html[data-theme="dark"] .budget-progress-bar {
+  background-color: var(--border-color) !important;
+}
+html[data-theme="dark"] .investment-glow-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+}
+
+/* Custom Scrollbars */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 5px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

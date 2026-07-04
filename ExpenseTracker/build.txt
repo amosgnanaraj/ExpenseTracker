@@ -1,0 +1,19 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+D:\AG Workspace\ExpenseTracker\obj\Debug\net8.0\ExpenseTracker.AssemblyInfo.cs(13,45): error CS0234: The type or namespace name 'UIFrameworkAttributeAttribute' does not exist in the namespace 'Microsoft.AspNetCore.Identity.UI' (are you missing an assembly reference?) [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+D:\AG Workspace\ExpenseTracker\obj\Debug\net8.0\ExpenseTracker.AssemblyInfo.cs(13,45): error CS0234: The type or namespace name 'UIFrameworkAttribute' does not exist in the namespace 'Microsoft.AspNetCore.Identity.UI' (are you missing an assembly reference?) [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+D:\AG Workspace\ExpenseTracker\Data\ExpenseTrackerDbContext.cs(4,37): error CS0234: The type or namespace name 'EntityFrameworkCore' does not exist in the namespace 'Microsoft.AspNetCore.Identity' (are you missing an assembly reference?) [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+D:\AG Workspace\ExpenseTracker\Data\ExpenseTrackerDbContext.cs(8,44): error CS0246: The type or namespace name 'IdentityDbContext<>' could not be found (are you missing a using directive or an assembly reference?) [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+D:\AG Workspace\ExpenseTracker\Data\ExpenseTrackerDbContext.cs(10,82): error CS0311: The type 'ExpenseTracker.Data.ExpenseTrackerDbContext' cannot be used as type parameter 'TContext' in the generic type or method 'DbContextOptions<TContext>'. There is no implicit reference conversion from 'ExpenseTracker.Data.ExpenseTrackerDbContext' to 'Microsoft.EntityFrameworkCore.DbContext'. [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+
+Build FAILED.
+
+D:\AG Workspace\ExpenseTracker\obj\Debug\net8.0\ExpenseTracker.AssemblyInfo.cs(13,45): error CS0234: The type or namespace name 'UIFrameworkAttributeAttribute' does not exist in the namespace 'Microsoft.AspNetCore.Identity.UI' (are you missing an assembly reference?) [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+D:\AG Workspace\ExpenseTracker\obj\Debug\net8.0\ExpenseTracker.AssemblyInfo.cs(13,45): error CS0234: The type or namespace name 'UIFrameworkAttribute' does not exist in the namespace 'Microsoft.AspNetCore.Identity.UI' (are you missing an assembly reference?) [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+D:\AG Workspace\ExpenseTracker\Data\ExpenseTrackerDbContext.cs(4,37): error CS0234: The type or namespace name 'EntityFrameworkCore' does not exist in the namespace 'Microsoft.AspNetCore.Identity' (are you missing an assembly reference?) [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+D:\AG Workspace\ExpenseTracker\Data\ExpenseTrackerDbContext.cs(8,44): error CS0246: The type or namespace name 'IdentityDbContext<>' could not be found (are you missing a using directive or an assembly reference?) [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+D:\AG Workspace\ExpenseTracker\Data\ExpenseTrackerDbContext.cs(10,82): error CS0311: The type 'ExpenseTracker.Data.ExpenseTrackerDbContext' cannot be used as type parameter 'TContext' in the generic type or method 'DbContextOptions<TContext>'. There is no implicit reference conversion from 'ExpenseTracker.Data.ExpenseTrackerDbContext' to 'Microsoft.EntityFrameworkCore.DbContext'. [D:\AG Workspace\ExpenseTracker\ExpenseTracker.csproj]
+    0 Warning(s)
+    5 Error(s)
+
+Time Elapsed 00:00:01.41

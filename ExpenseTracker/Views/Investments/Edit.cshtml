@@ -1,0 +1,125 @@
+@model ExpenseTracker.Models.Investment
+
+@{
+    ViewData["Title"] = "Edit Investment";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil me-2"></i>Edit Investment</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="UserId" />
+                        
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label asp-for="InvestmentTypeId" class="form-label fw-bold small text-uppercase">Investment Type</label>
+                                <select asp-for="InvestmentTypeId" class="form-select border-primary shadow-sm rounded-3" id="investment-type-select">
+                                    @foreach (var type in (IEnumerable<ExpenseTracker.Models.InvestmentType>)ViewBag.InvestmentTypes)
+                                    {
+                                        <option value="@type.Id" data-name="@type.Name" selected="@(type.Id == Model.InvestmentTypeId)">@type.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label asp-for="Name" class="form-label fw-bold small text-uppercase">Investment Name</label>
+                                <input asp-for="Name" class="form-control border-primary shadow-sm rounded-3" required />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12 symbol-field">
+                                <label asp-for="Symbol" class="form-label fw-bold small text-uppercase">Symbol / Code</label>
+                                <input asp-for="Symbol" class="form-control border-primary shadow-sm rounded-3" />
+                                <span asp-validation-for="Symbol" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 quantity-field">
+                                <label asp-for="Quantity" class="form-label fw-bold small text-uppercase">Quantity / Units</label>
+                                <input asp-for="Quantity" class="form-control border-primary shadow-sm rounded-3" type="number" step="0.0001" />
+                                <span asp-validation-for="Quantity" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="BuyPrice" class="form-label fw-bold small text-uppercase" id="price-label">Buy Price</label>
+                                <input asp-for="BuyPrice" class="form-control border-primary shadow-sm rounded-3" type="number" step="0.01" required />
+                                <span asp-validation-for="BuyPrice" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 current-price-field">
+                                <label asp-for="CurrentPrice" class="form-label fw-bold small text-uppercase">Current Price</label>
+                                <input asp-for="CurrentPrice" class="form-control border-primary shadow-sm rounded-3" type="number" step="0.01" />
+                                <span asp-validation-for="CurrentPrice" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="PurchaseDate" class="form-label fw-bold small text-uppercase">Date of Purchase</label>
+                                <input asp-for="PurchaseDate" class="form-control border-primary shadow-sm rounded-3" type="date" value="@Model.PurchaseDate.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="PurchaseDate" class="text-danger small"></span>
+                            </div>
+
+                            <!-- FD Fields -->
+                            <div class="col-md-6 fd-field d-none">
+                                <label asp-for="InterestRate" class="form-label fw-bold small text-uppercase">Interest Rate (%)</label>
+                                <input asp-for="InterestRate" class="form-control border-primary shadow-sm rounded-3" type="number" step="0.01" />
+                                <span asp-validation-for="InterestRate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 fd-field d-none">
+                                <label asp-for="MaturityDate" class="form-label fw-bold small text-uppercase">Maturity Date</label>
+                                <input asp-for="MaturityDate" class="form-control border-primary shadow-sm rounded-3" type="date" value="@(Model.MaturityDate?.ToString("yyyy-MM-dd"))" />
+                                <span asp-validation-for="MaturityDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 mt-4 text-end">
+                                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 me-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow">Update Investment</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.getElementById('investment-type-select');
+            const fdFields = document.querySelectorAll('.fd-field');
+            const symbolField = document.querySelector('.symbol-field');
+            const quantityField = document.querySelector('.quantity-field');
+            const currentPriceField = document.querySelector('.current-price-field');
+            const priceLabel = document.getElementById('price-label');
+
+            function toggleFields() {
+                const selectedOption = typeSelect.options[typeSelect.selectedIndex];
+                const typeName = selectedOption.getAttribute('data-name');
+                
+                if (typeName === 'Fixed Deposits') {
+                    fdFields.forEach(f => f.classList.remove('d-none'));
+                    symbolField.classList.add('d-none');
+                    quantityField.classList.add('d-none');
+                    currentPriceField.classList.add('d-none');
+                    priceLabel.innerText = 'Principal Amount';
+                } else {
+                    fdFields.forEach(f => f.classList.add('d-none'));
+                    symbolField.classList.remove('d-none');
+                    quantityField.classList.remove('d-none');
+                    currentPriceField.classList.remove('d-none');
+                    priceLabel.innerText = 'Buy Price';
+                }
+            }
+
+            typeSelect.addEventListener('change', toggleFields);
+            toggleFields(); // Init
+        });
+    </script>
+}

@@ -1,0 +1,75 @@
+@model IEnumerable<ExpenseTracker.Models.FixedDeposit>
+@{
+    var activeType = "Fixed Deposits";
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th class="ps-4">
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.NameSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Bank Name
+                        <i class="bi @(ViewBag.CurrentSort == null || ViewBag.CurrentSort == "" ? "bi-sort-alpha-down" : (ViewBag.CurrentSort == "name_desc" ? "bi-sort-alpha-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.CostSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Principal Amount
+                        <i class="bi @(ViewBag.CurrentSort == "Cost" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "cost_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                 <th>Interest Rate</th>
+                 <th>Payout</th>
+                 <th>Maturity Date</th>
+                 <th>Status</th>
+                <th>Accrued Interest</th>
+                <th>Current Value</th>
+                <th class="text-end pe-4 text-secondary">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold">@item.BankName</div>
+                        @if (!string.IsNullOrEmpty(item.CertificateNumber))
+                        {
+                            <div class="text-muted small">ID: @item.CertificateNumber</div>
+                        }
+                    </td>
+                    <td>@item.PrincipalAmount.ToString("C")</td>
+                     <td>@item.InterestRate.ToString("F2")%</td>
+                     <td>@item.PayoutType</td>
+                     <td>@item.MaturityDate.ToString("MMM dd, yyyy")</td>
+                     <td>
+                         @if (item.IsMatured)
+                         {
+                             <span class="badge bg-danger rounded-pill">Matured</span>
+                         }
+                         else
+                         {
+                             <span class="badge bg-success rounded-pill">@item.DaysToMaturity days left</span>
+                         }
+                     </td>
+                    <td class="text-success fw-bold">+@item.AccruedInterest.ToString("C")</td>
+                    <td class="fw-bold text-primary">@item.CurrentValue.ToString("C")</td>
+                    <td class="text-end pe-4">
+                        <div class="btn-group">
+                            <a asp-action="EditFD" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary rounded-pill me-2 edit-investment-link">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="DeleteFD" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this FD?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

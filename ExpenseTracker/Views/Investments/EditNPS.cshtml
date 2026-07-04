@@ -1,0 +1,55 @@
+@model ExpenseTracker.Models.NPS
+@{
+    Layout = null;
+}
+
+<div class="modal-header border-0 pb-0">
+    <h5 class="modal-title fw-bold"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Edit NPS Investment</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<form asp-action="EditNPS" method="post" id="editNpsForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="UserId" />
+    
+    <div class="modal-body py-4">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label asp-for="SchemeName" class="form-label fw-bold small text-uppercase">Scheme Name</label>
+                <input asp-for="SchemeName" class="form-control shadow-sm rounded-3" required />
+                <span asp-validation-for="SchemeName" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="TotalUnits" class="form-label fw-bold small text-uppercase">Total Units</label>
+                <input asp-for="TotalUnits" class="form-control shadow-sm rounded-3" type="number" step="0.0001" required />
+                <span asp-validation-for="TotalUnits" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="CurrentNAV" class="form-label fw-bold small text-uppercase">Current NAV</label>
+                <input asp-for="CurrentNAV" class="form-control shadow-sm rounded-3" type="number" step="0.0001" required />
+                <span asp-validation-for="CurrentNAV" class="text-danger small"></span>
+            </div>
+            <div class="col-md-12">
+                <label asp-for="TotalInvested" class="form-label fw-bold small text-uppercase">Total Invested Amount (All NPS)</label>
+                <input asp-for="TotalInvested" class="form-control shadow-sm rounded-3" type="number" step="0.01" required />
+                <span asp-validation-for="TotalInvested" class="text-danger small"></span>
+                <div class="form-text mt-1 text-muted small">
+                    <i class="bi bi-info-circle me-1"></i> Since NPS does not have a per-scheme invested value, enter the <strong>Total Invested across ALL your NPS schemes</strong> here.
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="PurchaseDate" class="form-label fw-bold small text-uppercase">As Of Date</label>
+                <input asp-for="PurchaseDate" class="form-control shadow-sm rounded-3" type="date" value="@(Model.PurchaseDate.ToString("yyyy-MM-dd"))" />
+                <span asp-validation-for="PurchaseDate" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-warning text-dark rounded-pill px-4 fw-bold shadow">
+            <i class="bi bi-save me-2"></i> Save Changes
+        </button>
+    </div>
+</form>

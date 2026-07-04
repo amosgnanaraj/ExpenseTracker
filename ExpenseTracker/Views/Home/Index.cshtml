@@ -1,0 +1,1041 @@
+@model ExpenseTracker.Models.HomeViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Dashboard";
+    var currentMonth = Model.SelectedMonth;
+    var currentYear = Model.SelectedYear;
+}
+
+<div class="container mt-4">
+    <!-- Header & Month Picker -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h1 class="display-6 fw-bold text-primary mb-1">Financial Dashboard</h1>
+            <p class="text-muted">Analysis for @CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(currentMonth) @currentYear</p>
+        </div>
+        <div class="col-md-6">
+            <form method="get" class="d-flex justify-content-md-end gap-2">
+                <select name="month" class="form-select form-select-sm w-auto rounded-pill border-primary shadow-sm">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        if (i == currentMonth)
+                        {
+                            <option value="@i" selected>@CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+                        }
+                        else
+                        {
+                            <option value="@i">@CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+                        }
+                    }
+                </select>
+                <select name="year" class="form-select form-select-sm w-auto rounded-pill border-primary shadow-sm">
+                    @for (int i = DateTime.Now.Year - 2; i <= DateTime.Now.Year; i++)
+                    {
+                        if (i == currentYear)
+                        {
+                            <option value="@i" selected>@i</option>
+                        }
+                        else
+                        {
+                            <option value="@i">@i</option>
+                        }
+                    }
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">Filter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-5 row-cols-1 row-cols-md-3">
+        <div class="col">
+            <div class="card card-vibrant card-vibrant-success h-100 border-0">
+                <div class="card-body text-center p-3">
+                    <div class="small fw-bold opacity-75 mb-1 text-uppercase d-flex align-items-center justify-content-center gap-1">
+                        Total Assets
+                        <i class="bi bi-info-circle text-white opacity-75" style="cursor: help;" data-bs-toggle="tooltip" data-bs-placement="top" title="Total Assets = Bank Balance + Investments"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">@Model.TotalAssets.ToString("C0")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-vibrant card-vibrant-info h-100 border-0">
+                <div class="card-body text-center p-3">
+                    <div class="small fw-bold opacity-75 mb-1 text-uppercase">Total Investments</div>
+                    <h3 class="fw-bold mb-0">@Model.TotalInvestmentValue.ToString("C0")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-vibrant card-vibrant-amber h-100 border-0">
+                <div class="card-body text-center p-3">
+                    <div class="small fw-bold opacity-75 mb-1 text-uppercase">Credit Card Debt</div>
+                    <h3 class="fw-bold mb-0">-@Model.TotalCreditCardDebt.ToString("C0")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-vibrant card-vibrant-danger h-100 border-0">
+                <div class="card-body text-center p-3">
+                    <div class="small fw-bold opacity-75 mb-1 text-uppercase">Loan Debt</div>
+                    <h3 class="fw-bold mb-0">-@Model.TotalLoanDebt.ToString("C0")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-vibrant card-vibrant-primary h-100 border-0">
+                <div class="card-body text-center p-3">
+                    <div class="small fw-bold opacity-75 mb-1 text-uppercase">Monthly Income</div>
+                    <h3 class="fw-bold mb-0">@Model.MonthlyIncome.ToString("C0")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-vibrant card-vibrant-rose h-100 border-0">
+                <div class="card-body text-center p-3">
+                    <div class="small fw-bold opacity-75 mb-1 text-uppercase">Monthly Expense</div>
+                    <h3 class="fw-bold mb-0">@Model.MonthlyExpense.ToString("C0")</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    ...
+
+    <!-- Financial Wealth Insights -->
+    <div class="row g-3 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm insight-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="insight-icon bg-soft-primary text-primary">
+                            <i class="bi bi-piggy-bank-fill"></i>
+                        </div>
+                        @{
+                            var savingsColor = Model.SavingsRate >= 20 ? "text-success" : (Model.SavingsRate >= 10 ? "text-warning" : "text-danger");
+                            var savingsStatus = Model.SavingsRate >= 20 ? "Excellent" : (Model.SavingsRate >= 10 ? "Healthy" : "Needs Attention");
+                        }
+                        <span class="badge rounded-pill @(Model.SavingsRate >= 20 ? "bg-success" : "bg-warning") bg-opacity-10 @savingsColor px-3">@savingsStatus</span>
+                    </div>
+                    <h6 class="text-muted fw-bold small text-uppercase mb-1">Savings Rate</h6>
+                    <div class="d-flex align-items-end gap-2">
+                        <h2 class="fw-bold mb-0">@Model.SavingsRate.ToString("F1")%</h2>
+                        <span class="small text-muted mb-1 pb-1">of income saved</span>
+                    </div>
+                    <div class="progress mt-3" style="height: 6px;">
+                        <div class="progress-bar @(Model.SavingsRate >= 20 ? "bg-success" : "bg-primary")" role="progressbar" style="width: @(Math.Min(100, Math.Max(0, Model.SavingsRate)))%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm insight-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="insight-icon bg-soft-info text-info">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        @{
+                            var velocityColor = Model.SpendingVelocity <= 0 ? "text-success" : "text-danger";
+                            var velocityIcon = Model.SpendingVelocity <= 0 ? "bi-arrow-down-right" : "bi-arrow-up-right";
+                        }
+                        <span class="badge rounded-pill bg-light @velocityColor px-3">
+                            <i class="bi @velocityIcon me-1"></i>MTD Velocity
+                        </span>
+                    </div>
+                    <h6 class="text-muted fw-bold small text-uppercase mb-1">Spending Velocity</h6>
+                    <div class="d-flex align-items-end gap-2">
+                        <h2 class="fw-bold mb-0">@Math.Abs(Model.SpendingVelocity).ToString("F1")%</h2>
+                        <span class="small text-muted mb-1 pb-1">@(Model.SpendingVelocity <= 0 ? "slower" : "faster") than last month</span>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">Comparison for the same days in the previous period.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm insight-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="insight-icon bg-soft-warning text-warning">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-3">Security Score</span>
+                    </div>
+                    <h6 class="text-muted fw-bold small text-uppercase mb-1">Financial Runway</h6>
+                    <div class="d-flex align-items-end gap-2">
+                        <h2 class="fw-bold mb-0">@Model.FinancialRunway.ToString("F1")</h2>
+                        <span class="small text-muted mb-1 pb-1">months of survival</span>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">Based on your average spending of <strong>@Model.AvgMonthlyExpense.ToString("C0")</strong> over 6 months.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            @{
+                var dtiStatus = "Excellent";
+                var dtiColor = "text-success";
+                var dtiBgClass = "bg-soft-success";
+                if (Model.DtiRatio >= 50)
+                {
+                    dtiStatus = "Critical";
+                    dtiColor = "text-danger";
+                    dtiBgClass = "bg-soft-danger";
+                }
+                else if (Model.DtiRatio >= 36)
+                {
+                    dtiStatus = "High Burden";
+                    dtiColor = "text-danger";
+                    dtiBgClass = "bg-soft-danger";
+                }
+                else if (Model.DtiRatio >= 15)
+                {
+                    dtiStatus = "Healthy";
+                    dtiColor = "text-warning";
+                    dtiBgClass = "bg-soft-warning";
+                }
+            }
+            <div class="card border-0 rounded-4 shadow-sm insight-card h-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Debt-to-Asset Ratio: @Model.DtaRatio.ToString("F1")% (Total Debt: @Model.TotalDebt.ToString("C0"))">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="insight-icon @dtiBgClass @dtiColor">
+                            <i class="bi bi-shield-fill-check"></i>
+                        </div>
+                        <span class="badge rounded-pill bg-light @dtiColor px-3">@dtiStatus</span>
+                    </div>
+                    <h6 class="text-muted fw-bold small text-uppercase mb-1">Debt-to-Income (DTI)</h6>
+                    <div class="d-flex align-items-end gap-2">
+                        <h2 class="fw-bold mb-0">@Model.DtiRatio.ToString("F1")%</h2>
+                        <span class="small text-muted mb-1 pb-1">income to debt</span>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">Monthly debt payments are <strong>@Model.MonthlyDebtRepayments.ToString("C0")</strong> this period.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 50/30/20 Budgeting Rule Card -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm h-100" style="background: #ffffff; transition: all 0.3s ease;">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1 fw-bold text-dark"><i class="bi bi-wallet2 text-primary me-2"></i>50/30/20 Budget Allocation Analysis</h5>
+                        <p class="text-muted small mb-0">Understand how your income is divided between essentials (50%), lifestyle (30%), and future wealth (20%).</p>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold">Live Breakdown</span>
+                </div>
+                <div class="card-body px-4 pb-4 pt-1">
+                    @if (Model.MonthlyIncome > 0)
+                    {
+                        <!-- Segmented Progress Bar -->
+                        <div class="budget-progress-bar mb-4 shadow-sm">
+                            @if (Model.BudgetNeedsPercentage > 0)
+                            {
+                                <div class="budget-segment segment-needs" style="width: @Model.BudgetNeedsPercentage%" data-bs-toggle="tooltip" title="Needs: @Model.BudgetNeedsAmount.ToString("C0") (@Model.BudgetNeedsPercentage.ToString("F1")%)">
+                                    @if (Model.BudgetNeedsPercentage >= 10) { <text>Needs</text> }
+                                </div>
+                            }
+                            @if (Model.BudgetWantsPercentage > 0)
+                            {
+                                <div class="budget-segment segment-wants" style="width: @Model.BudgetWantsPercentage%" data-bs-toggle="tooltip" title="Wants: @Model.BudgetWantsAmount.ToString("C0") (@Model.BudgetWantsPercentage.ToString("F1")%)">
+                                    @if (Model.BudgetWantsPercentage >= 10) { <text>Wants</text> }
+                                </div>
+                            }
+                            @if (Model.BudgetSavingsPercentage > 0)
+                            {
+                                <div class="budget-segment segment-savings" style="width: @Model.BudgetSavingsPercentage%" data-bs-toggle="tooltip" title="Savings: @Model.BudgetSavingsAmount.ToString("C0") (@Model.BudgetSavingsPercentage.ToString("F1")%)">
+                                    @if (Model.BudgetSavingsPercentage >= 10) { <text>Savings</text> }
+                                </div>
+                            }
+                            @if (Model.BudgetNeedsPercentage + Model.BudgetWantsPercentage + Model.BudgetSavingsPercentage == 0)
+                            {
+                                <div class="budget-segment segment-deficit w-100">No activity recorded</div>
+                            }
+                        </div>
+
+                        <!-- Grid for breakdowns -->
+                        <div class="row g-4">
+                            <!-- Needs Column -->
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-25" style="border-color: rgba(99, 102, 241, 0.15) !important;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="d-flex align-items-center fw-bold"><span class="budget-indicator-dot dot-needs"></span>Needs (50%)</span>
+                                        @if (Model.BudgetNeedsPercentage > 50)
+                                        {
+                                            <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Over Budget</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.75rem;"><i class="bi bi-check-circle-fill me-1"></i>Healthy</span>
+                                        }
+                                    </div>
+                                    <h3 class="fw-bold mb-1">@Model.BudgetNeedsAmount.ToString("C0")</h3>
+                                    <div class="d-flex justify-content-between text-muted small">
+                                        <span>Current Allocation:</span>
+                                        <span class="fw-bold text-primary">@Model.BudgetNeedsPercentage.ToString("F1")%</span>
+                                    </div>
+                                    <div class="text-muted small mt-2" style="font-size: 0.75rem; line-height: 1.3;">Rent, utilities, groceries, healthcare, fuel, and loan EMI repayments.</div>
+                                </div>
+                            </div>
+
+                            <!-- Wants Column -->
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-25" style="border-color: rgba(244, 63, 94, 0.15) !important;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="d-flex align-items-center fw-bold"><span class="budget-indicator-dot dot-wants"></span>Wants (30%)</span>
+                                        @if (Model.BudgetWantsPercentage > 30)
+                                        {
+                                            <span class="badge bg-danger rounded-pill" style="font-size: 0.75rem;"><i class="bi bi-graph-up-arrow me-1"></i>High Discretionary</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.75rem;"><i class="bi bi-check-circle-fill me-1"></i>Within Limits</span>
+                                        }
+                                    </div>
+                                    <h3 class="fw-bold mb-1">@Model.BudgetWantsAmount.ToString("C0")</h3>
+                                    <div class="d-flex justify-content-between text-muted small">
+                                        <span>Current Allocation:</span>
+                                        <span class="fw-bold text-rose">@Model.BudgetWantsPercentage.ToString("F1")%</span>
+                                    </div>
+                                    <div class="text-muted small mt-2" style="font-size: 0.75rem; line-height: 1.3;">Dining out, shopping, travel, entertainment, and non-essential lifestyle spending.</div>
+                                </div>
+                            </div>
+
+                            <!-- Savings & Investments Column -->
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-25" style="border-color: rgba(16, 185, 129, 0.15) !important;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="d-flex align-items-center fw-bold"><span class="budget-indicator-dot dot-savings"></span>Savings (20%)</span>
+                                        @if (Model.BudgetSavingsPercentage >= 20)
+                                        {
+                                            <span class="badge bg-success text-white rounded-pill animate-pulse" style="font-size: 0.75rem;"><i class="bi bi-star-fill me-1"></i>Super Saver 🌟</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill" style="font-size: 0.75rem;">Build Wealth</span>
+                                        }
+                                    </div>
+                                    <h3 class="fw-bold mb-1">@Model.BudgetSavingsAmount.ToString("C0")</h3>
+                                    <div class="d-flex justify-content-between text-muted small">
+                                        <span>Current Allocation:</span>
+                                        <span class="fw-bold text-success">@Model.BudgetSavingsPercentage.ToString("F1")%</span>
+                                    </div>
+                                    <div class="text-muted small mt-2" style="font-size: 0.75rem; line-height: 1.3;">Remaining unspent income saved in bank accounts or directed to wealth growth.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active investment additions visual callout -->
+                        @if (Model.ActiveInvestmentsAmount > 0)
+                        {
+                            <div class="mt-4 p-3 investment-glow-card d-flex align-items-center gap-3">
+                                <div class="fs-2 text-success">
+                                    <i class="bi bi-rocket-takeoff-fill"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-success" style="font-size: 0.95rem;">Active Wealth-Building Detected!</div>
+                                    <div class="text-muted small">You invested an additional <strong>@Model.ActiveInvestmentsAmount.ToString("C0")</strong> in Stocks, Mutual Funds, NPS, or Fixed Deposits this month. Keep up the phenomenal work! 🚀</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-exclamation-circle text-primary fs-3 mb-2 d-block"></i>
+                            Please record active monthly income to enable the 50/30/20 Budgeting Rule Analysis widget.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debt Reduction Simulator Card -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm h-100" style="background: #ffffff; transition: all 0.3s ease;">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1 fw-bold text-dark"><i class="bi bi-graph-down text-danger me-2"></i>Debt Reduction Simulator</h5>
+                        <p class="text-muted small mb-0">Compare the Avalanche (highest interest first) vs Snowball (lowest balance first) strategies.</p>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-4 pt-1">
+                    @if (Model.DebtAccounts.Any())
+                    {
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 bg-light h-100">
+                                    <label for="extraPayment" class="form-label fw-bold">Extra Monthly Budget</label>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" id="extraPayment" class="form-control" value="0" min="0" step="10">
+                                    </div>
+                                    
+                                    <label for="expectedReturn" class="form-label fw-bold mt-2">Expected Market Return</label>
+                                    <div class="input-group mb-3">
+                                        <input type="number" id="expectedReturn" class="form-control" value="8" min="0" max="100" step="0.1">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <p class="small text-muted mb-0">Used to intelligently suggest paying down debt vs investing.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <!-- Snowball Results -->
+                                    <div class="col-sm-6 mb-3">
+                                        <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-25" style="border-color: rgba(6, 182, 212, 0.15) !important;">
+                                            <h6 class="fw-bold d-flex align-items-center"><i class="bi bi-snow me-2 text-info"></i>Snowball Method</h6>
+                                            <div class="text-muted small mb-2">Pays off smallest balances first for quick wins.</div>
+                                            <div class="fs-4 fw-bold mb-0" id="snowballMonths">--</div>
+                                            <div class="small text-muted mb-2">Months to Payoff</div>
+                                            <div class="fs-5 fw-bold text-danger mb-0" id="snowballInterest">--</div>
+                                            <div class="small text-muted">Total Interest Paid</div>
+                                        </div>
+                                    </div>
+                                    <!-- Avalanche Results -->
+                                    <div class="col-sm-6 mb-3">
+                                        <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-25" style="border-color: rgba(244, 63, 94, 0.15) !important;">
+                                            <h6 class="fw-bold d-flex align-items-center"><i class="bi bi-fire me-2 text-danger"></i>Avalanche Method</h6>
+                                            <div class="text-muted small mb-2">Pays off highest interest rates first to save money.</div>
+                                            <div class="fs-4 fw-bold mb-0" id="avalancheMonths">--</div>
+                                            <div class="small text-muted mb-2">Months to Payoff</div>
+                                            <div class="fs-5 fw-bold text-danger mb-0" id="avalancheInterest">--</div>
+                                            <div class="small text-muted">Total Interest Paid</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- JSON data payload for JS -->
+                        <script id="debtData" type="application/json">
+                            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DebtAccounts.Select(a => new { Name = a.Name, Balance = a.Balance, InterestRate = a.InterestRate ?? 0, MinimumPayment = a.MinimumPayment })))
+                        </script>
+
+                        <div class="mt-4">
+                            <div id="optimizerCallout" class="alert alert-primary border-0 shadow-sm rounded-3 d-flex align-items-center d-none" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%); border-left: 4px solid #4f46e5 !important;">
+                                <i class="bi bi-lightbulb-fill fs-2 text-warning me-3" style="filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5));"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-primary">Intelligent Wealth Optimizer</h6>
+                                    <p id="optimizerMessage" class="mb-0 small text-dark">Enter an extra budget to get a suggestion.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 border-top pt-4">
+                            <h6 class="fw-bold mb-3 text-secondary">Projected Net Wealth Growth</h6>
+                            <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="debtPayoffChart"></canvas>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-emoji-smile text-success fs-3 mb-2 d-block"></i>
+                            You have no active loans or credit card debt. Great job!
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1: Monthly Breakdown & Daily Trend -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Spending by Category</h5>
+                    <button id="categoryBackBtn" class="btn btn-sm btn-outline-secondary rounded-pill d-none">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (Model.CategoryValues.Any())
+                    {
+                        <canvas id="categoryChart" style="max-height: 250px;"></canvas>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">No data available for this month.</div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up text-primary me-2"></i>Daily Spending Trend</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.DailyValues.Any())
+                    {
+                        <canvas id="dailyChart" style="max-height: 250px;"></canvas>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">No data available for this month.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: 6-Month Trend & Account Breakdown -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-range text-primary me-2"></i>6-Month Trend Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="trendChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-wallet-fill text-primary me-2"></i>Accounts</h5>
+                </div>
+                <div class="card-body p-0 accounts-scroll">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <tbody class="border-top-0">
+                                @foreach (var account in Model.Accounts.OrderBy(a => a.Type).ThenBy(a => a.Name))
+                                {
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="fw-bold">@account.Name</div>
+                                            <div class="text-muted small">@account.Type</div>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            @{
+                                                var valClass = account.Type == ExpenseTracker.Models.AccountType.Bank ? "text-success" : "text-danger";
+                                                var prefix = account.Type == ExpenseTracker.Models.AccountType.Bank ? "" : "-";
+                                            }
+                                            <span class="fw-bold @valClass">@prefix@account.Balance.ToString("C")</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6-Month Historical Net Worth Trend Row -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1 fw-bold text-dark"><i class="bi bi-cash-coin text-success me-2"></i>6-Month Net Worth Trend</h5>
+                        <p class="text-muted small mb-0">Track the progression of your total assets minus liabilities over the last 6 months.</p>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-bold">Historical Wealth Growth</span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <div>
+                            <h2 class="fw-bold mb-0 text-success">@Model.CurrentNetWorth.ToString("C0")</h2>
+                            <span class="text-muted small">Current Combined Net Worth</span>
+                        </div>
+                        @{
+                            decimal nwGrowth = 0;
+                            if (Model.NetWorthValues.Any() && Model.NetWorthValues[0] != 0)
+                            {
+                                nwGrowth = ((Model.CurrentNetWorth - Model.NetWorthValues[0]) / Math.Abs(Model.NetWorthValues[0])) * 100;
+                            }
+                        }
+                        @if (nwGrowth != 0)
+                        {
+                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3 py-2 fw-bold fs-6">
+                                <i class="bi @(nwGrowth >= 0 ? "bi-arrow-up-right-circle-fill" : "bi-arrow-down-right-circle-fill") me-1"></i>
+                                @(nwGrowth >= 0 ? "+" : "")@nwGrowth.ToString("F1")% (6M Growth)
+                            </span>
+                        }
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 320px; width: 100%;">
+                        <canvas id="netWorthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Investment Insights Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pie-chart-fill text-info me-2"></i>Investment Allocation</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="investmentAllocationChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart-fill text-success me-2"></i>Performance (Cost vs Value)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-star-fill text-warning me-2"></i>Top Holdings</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <tbody class="border-top-0">
+                                @foreach (var holding in Model.TopHoldings)
+                                {
+                                    <tr>
+                                        <td class="ps-3 py-2">
+                                            <div class="fw-bold small">@holding.Name</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">@holding.Type</div>
+                                        </td>
+                                        <td class="text-end pe-3 py-2">
+                                            <div class="fw-bold small">@holding.CurrentValue.ToString("C0")</div>
+                                            <div class="@(holding.ProfitLoss >= 0 ? "text-success" : "text-danger")" style="font-size: 0.75rem;">
+                                                @(holding.ProfitLoss >= 0 ? "+" : "")@holding.ProfitLossPercentage.ToString("F1")%
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#cbd5e1' : '#64748b';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+
+            if (typeof Chart !== 'undefined' && Chart.defaults) {
+                Chart.defaults.color = textColor;
+                if (Chart.defaults.scale && Chart.defaults.scale.grid) {
+                    Chart.defaults.scale.grid.color = gridColor;
+                }
+            }
+
+            // Vibrant Modern Color Palette
+            const vibrantPalette = {
+                indigo: '#6366f1',
+                emerald: '#10b981',
+                rose: '#f43f5e',
+                amber: '#f59e0b',
+                cyan: '#06b6d4',
+                violet: '#8b5cf6',
+                slate: '#64748b'
+            };
+            
+            const chartColors = [
+                vibrantPalette.indigo, vibrantPalette.emerald, vibrantPalette.rose, 
+                vibrantPalette.amber, vibrantPalette.cyan, vibrantPalette.violet, 
+                '#3b82f6', '#84cc16'
+            ];
+
+            @if (Model.CategoryValues.Any())
+            {
+                <text>
+                const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+                const mainLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryLabels));
+                const mainValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryValues));
+                const otherLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OtherCategoryLabels));
+                const otherValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OtherCategoryValues));
+                
+                let currentIsOther = false;
+
+                const categoryChart = new Chart(categoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: mainLabels,
+                        datasets: [{
+                            data: mainValues,
+                            backgroundColor: chartColors,
+                            borderWidth: 2,
+                            borderColor: '#ffffff',
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, padding: 20, font: { size: 12 } } }
+                        },
+                        cutout: '75%',
+                        radius: '90%',
+                        onClick: (event, elements) => {
+                            if (elements.length > 0 && !currentIsOther) {
+                                const index = elements[0].index;
+                                const label = categoryChart.data.labels[index];
+                                
+                                if (label === 'Other' && otherLabels.length > 0) {
+                                    currentIsOther = true;
+                                    categoryChart.data.labels = otherLabels;
+                                    categoryChart.data.datasets[0].data = otherValues;
+                                    categoryChart.update();
+                                    document.getElementById('categoryBackBtn').classList.remove('d-none');
+                                }
+                            }
+                        }
+                    }
+                });
+
+                document.getElementById('categoryBackBtn').addEventListener('click', function() {
+                    currentIsOther = false;
+                    categoryChart.data.labels = mainLabels;
+                    categoryChart.data.datasets[0].data = mainValues;
+                    categoryChart.update();
+                    this.classList.add('d-none');
+                });
+                </text>
+            }
+
+            @if (Model.DailyValues.Any())
+            {
+                <text>
+                const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+                const dailyGradient = dailyCtx.createLinearGradient(0, 0, 0, 250);
+                dailyGradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+                dailyGradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+                new Chart(dailyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyLabels)),
+                        datasets: [{
+                            label: 'Daily Spending',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyValues)),
+                            fill: true,
+                            backgroundColor: dailyGradient,
+                            borderColor: vibrantPalette.indigo,
+                            borderWidth: 3,
+                            tension: 0.45,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: vibrantPalette.indigo
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: gridColor, borderDash: [5, 5] }, 
+                                ticks: { callback: value => '₹' + value } 
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+                </text>
+            }
+
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendLabels)),
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendIncomeValues)),
+                            backgroundColor: vibrantPalette.emerald,
+                            borderRadius: 6,
+                            maxBarThickness: 25
+                        },
+                        {
+                            label: 'Expense',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendExpenseValues)),
+                            backgroundColor: vibrantPalette.rose,
+                            borderRadius: 6,
+                            maxBarThickness: 25
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 10, padding: 20 } }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: gridColor, borderDash: [5, 5] },
+                            ticks: { callback: value => '₹' + value }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Investment Allocation Chart
+            const allocationCtx = document.getElementById('investmentAllocationChart').getContext('2d');
+            new Chart(allocationCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.InvestmentTypeLabels)),
+                    datasets: [{
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.InvestmentTypeValues)),
+                        backgroundColor: [vibrantPalette.indigo, vibrantPalette.cyan, vibrantPalette.slate, vibrantPalette.amber],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10, padding: 15 } } },
+                    cutout: '75%',
+                    radius: '90%'
+                }
+            });
+
+            // Performance Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            new Chart(performanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PerformanceLabels)),
+                    datasets: [{
+                        label: 'Value',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PerformanceValues)),
+                        backgroundColor: [vibrantPalette.slate, vibrantPalette.emerald],
+                        borderRadius: 6,
+                        maxBarThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: gridColor, borderDash: [5, 5] }, 
+                            ticks: { callback: value => '₹' + value } 
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Net Worth Historical Trend Chart
+            @if (Model.NetWorthValues.Any())
+            {
+                <text>
+                const netWorthCtx = document.getElementById('netWorthChart').getContext('2d');
+                const netWorthGradient = netWorthCtx.createLinearGradient(0, 0, 0, 300);
+                netWorthGradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+                netWorthGradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+                new Chart(netWorthCtx, {
+                    type: 'line',
+                    data: {
+                        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.NetWorthLabels)),
+                        datasets: [{
+                            label: 'Net Worth',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.NetWorthValues)),
+                            fill: true,
+                            backgroundColor: netWorthGradient,
+                            borderColor: vibrantPalette.emerald,
+                            borderWidth: 4,
+                            tension: 0.35,
+                            pointRadius: 4,
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: vibrantPalette.emerald,
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: context => ' Net Worth: ₹' + context.parsed.y.toLocaleString('en-IN')
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                grid: { color: gridColor, borderDash: [5, 5] }, 
+                                ticks: { callback: value => '₹' + value.toLocaleString('en-IN') } 
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+                </text>
+            }
+
+            // Initialize Bootstrap Tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+}
+
+<style>
+    .card-vibrant {
+        color: white;
+        border-radius: 1.25rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-vibrant:hover {
+        transform: translateY(-5px);
+    }
+    
+    .card-vibrant-success { 
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+        box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
+    }
+    .card-vibrant-danger { 
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); 
+        box-shadow: 0 10px 20px -5px rgba(244, 63, 94, 0.4);
+    }
+    .card-vibrant-info { 
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); 
+        box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+    }
+    .card-vibrant-amber { 
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+        box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
+    }
+    .card-vibrant-primary { 
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); 
+        box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.4);
+    }
+    .card-vibrant-rose { 
+        background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); 
+        box-shadow: 0 10px 20px -5px rgba(236, 72, 153, 0.4);
+    }
+    
+    .card-header { 
+        background-color: transparent !important;
+        border-bottom: 1px solid rgba(0,0,0,0.05) !important; 
+    }
+    .accounts-scroll { max-height: 300px; overflow-y: auto; }
+    
+    /* Global vibrancy touches */
+    body { background-color: var(--bg-color); }
+    .display-6 { letter-spacing: -1px; }
+    .btn-primary { 
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border: none;
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        transform: scale(1.02);
+    }
+
+    /* Insight Cards Style */
+    .insight-card {
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+    .insight-card:hover {
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+        transform: translateY(-5px);
+    }
+    .insight-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .bg-soft-primary { background-color: rgba(99, 102, 241, 0.1); }
+    .bg-soft-info { background-color: rgba(6, 182, 212, 0.1); }
+    .bg-soft-warning { background-color: rgba(245, 158, 11, 0.1); }
+    .bg-soft-success { background-color: rgba(16, 185, 129, 0.1); }
+    .bg-soft-danger { background-color: rgba(244, 63, 94, 0.15); }
+
+    /* 50/30/20 Custom Visual Styling */
+    .budget-progress-bar {
+        height: 24px;
+        background-color: #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .budget-segment {
+        height: 100%;
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    .segment-needs {
+        background: linear-gradient(90deg, #4f46e5 0%, #6366f1 100%);
+    }
+    .segment-wants {
+        background: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
+    }
+    .segment-savings {
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    }
+    .segment-deficit {
+        background: linear-gradient(90deg, #94a3b8 0%, #64748b 100%);
+    }
+    .budget-indicator-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    .dot-needs { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+    .dot-wants { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+    .dot-savings { background: linear-gradient(135deg, #10b981, #059669); }
+    
+    .investment-glow-card {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+        border: 1px dashed rgba(16, 185, 129, 0.35);
+        border-radius: 1rem;
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.04);
+        transition: transform 0.2s ease;
+    }
+    .investment-glow-card:hover {
+        transform: scale(1.01);
+    }
+</style>

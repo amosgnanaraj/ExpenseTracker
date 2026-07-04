@@ -1,0 +1,89 @@
+@model dynamic
+
+@{
+    ViewData["Title"] = "Add Investment";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold text-dark">Add New Investment</h2>
+                <p class="text-muted">Choose the type of investment you want to add to your portfolio.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col">
+                    <a asp-action="CreateStock" class="card h-100 border-0 shadow-sm text-decoration-none hover-card rounded-4 p-4 text-center">
+                        <div class="icon-circle bg-primary text-white mx-auto mb-3">
+                            <i class="bi bi-graph-up-arrow fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2">Stocks</h4>
+                        <p class="text-muted small mb-0">Direct equity investments in companies.</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a asp-action="CreateMF" class="card h-100 border-0 shadow-sm text-decoration-none hover-card rounded-4 p-4 text-center">
+                        <div class="icon-circle bg-info text-white mx-auto mb-3">
+                            <i class="bi bi-pie-chart-fill fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2">Mutual Funds</h4>
+                        <p class="text-muted small mb-0">Professionaly managed pooled investments.</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a asp-action="CreateFD" class="card h-100 border-0 shadow-sm text-decoration-none hover-card rounded-4 p-4 text-center">
+                        <div class="icon-circle bg-success text-white mx-auto mb-3">
+                            <i class="bi bi-safe2-fill fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2">Fixed Deposits</h4>
+                        <p class="text-muted small mb-0">Low-risk fixed return bank deposits.</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a asp-action="CreateNPS" class="card h-100 border-0 shadow-sm text-decoration-none hover-card rounded-4 p-4 text-center">
+                        <div class="icon-circle bg-warning text-dark mx-auto mb-3">
+                            <i class="bi bi-shield-lock-fill fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2">NPS</h4>
+                        <p class="text-muted small mb-0">National Pension System investments.</p>
+                    </a>
+                </div>
+                <div class="col">
+                    <a asp-action="CreateEPF" class="card h-100 border-0 shadow-sm text-decoration-none hover-card rounded-4 p-4 text-center">
+                        <div class="icon-circle text-white mx-auto mb-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;">
+                            <i class="bi bi-wallet2 fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2">EPF</h4>
+                        <p class="text-muted small mb-0">Employee Provident Fund savings.</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-5 text-center">
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="bi bi-arrow-left me-2"></i> Back to Portfolio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

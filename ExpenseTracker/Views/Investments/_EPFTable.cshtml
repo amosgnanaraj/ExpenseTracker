@@ -1,0 +1,87 @@
+@model IEnumerable<ExpenseTracker.Models.EPF>
+@{
+    var activeType = "EPF";
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th class="ps-4">
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.NameSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        UAN / Account Number
+                        <i class="bi @(ViewBag.CurrentSort == null || ViewBag.CurrentSort == "" ? "bi-sort-alpha-down" : (ViewBag.CurrentSort == "name_desc" ? "bi-sort-alpha-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>Member ID</th>
+                <th>Employee Cont. (Invested)</th>
+                <th>Employer Cont.</th>
+                <th>Interest Earned</th>
+                <th>Transferred In</th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.ValueSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Current Value
+                        <i class="bi @(ViewBag.CurrentSort == "Value" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "value_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th class="text-end pe-4 text-secondary">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold">@item.UAN</div>
+                        <div class="text-muted small">Updated: @item.PurchaseDate.ToString("dd MMM yyyy")</div>
+                    </td>
+                    <td>@(string.IsNullOrEmpty(item.MemberId) ? "N/A" : item.MemberId)</td>
+                    <td>@item.EmployeeContribution.ToString("C")</td>
+                    <td>@item.EmployerContribution.ToString("C")</td>
+                    <td>@item.InterestEarned.ToString("C")</td>
+                    <td>@item.TransferIn.ToString("C")</td>
+                    <td>
+                        <div class="fw-bold">@item.CurrentValue.ToString("C")</div>
+                        <div class="small text-success">Matching + Int: +@item.ProfitLoss.ToString("C")</div>
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="btn-group">
+                            <a asp-action="EditEPF" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary rounded-pill me-2 edit-investment-link">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="DeleteEPF" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this EPF record?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+@{
+    var totalInvested = Model.Sum(x => x.EmployeeContribution);
+    var totalValue = Model.Sum(x => x.CurrentValue);
+    var totalPL = totalValue - totalInvested;
+    var plPercent = totalInvested != 0 ? (totalPL / totalInvested) * 100 : 0;
+}
+        <tfoot class="table-light border-top">
+            <tr>
+                <td colspan="6" class="text-end fw-bold pe-4">Total EPF Assets:</td>
+                <td class="fw-bold">
+                    <div class="text-dark">@totalValue.ToString("C")</div>
+                    <div class="small text-muted fw-normal">Invested: @totalInvested.ToString("C")</div>
+                </td>
+                <td class="text-end pe-4 border-start">
+                    <div class="fw-bold text-success">
+                        +@totalPL.ToString("C")
+                    </div>
+                    <div class="small text-success fw-bold">
+                        +@plPercent.ToString("N2")%
+                    </div>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

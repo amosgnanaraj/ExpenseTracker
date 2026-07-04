@@ -1,0 +1,94 @@
+@model IEnumerable<ExpenseTracker.Models.Stock>
+@{
+    var activeType = "Stocks";
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th class="ps-4">
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.NameSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Stock Name / Symbol
+                        <i class="bi @(ViewBag.CurrentSort == null || ViewBag.CurrentSort == "" ? "bi-sort-alpha-down" : (ViewBag.CurrentSort == "name_desc" ? "bi-sort-alpha-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.PriceSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Avg. Buy Price
+                        <i class="bi @(ViewBag.CurrentSort == "Price" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "price_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.QtySortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Quantity
+                        <i class="bi @(ViewBag.CurrentSort == "Qty" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "qty_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.CostSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Invested Amount
+                        <i class="bi @(ViewBag.CurrentSort == "Cost" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "cost_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.ValueSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Market Value
+                        <i class="bi @(ViewBag.CurrentSort == "Value" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "value_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewBag.PLSortParm" asp-route-activeTab="@activeType" class="text-decoration-none text-secondary">
+                        Overall P&L
+                        <i class="bi @(ViewBag.CurrentSort == "PL" ? "bi-sort-numeric-down" : (ViewBag.CurrentSort == "pl_desc" ? "bi-sort-numeric-up" : ""))"></i>
+                    </a>
+                </th>
+                <th class="text-end pe-4 text-secondary">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var pl = item.ProfitLoss;
+                var plPercent = item.Quantity * item.BuyPrice != 0 ? (pl / (item.Quantity * item.BuyPrice)) * 100 : 0;
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold">@item.Name</div>
+                        <div class="text-muted small">@item.Symbol</div>
+                    </td>
+                    <td>@item.BuyPrice.ToString("C")</td>
+                    <td>@item.Quantity.ToString("N4")</td>
+                    <td>@item.TotalCost.ToString("C")</td>
+                    <td>@item.CurrentValue.ToString("C")</td>
+                    <td>
+                        <div class="fw-bold @(pl >= 0 ? "text-success" : "text-danger")">
+                            @(pl >= 0 ? "+" : "")@pl.ToString("C")
+                        </div>
+                        <div class="small @(pl >= 0 ? "text-success" : "text-danger")">
+                            @(pl >= 0 ? "+" : "")@plPercent.ToString("N2")%
+                        </div>
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="btn-group">
+                            <form asp-action="RefreshPrice" asp-route-id="@item.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill me-2" title="Refresh Price from Google">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </form>
+                            <a asp-action="EditStock" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary rounded-pill me-2 edit-investment-link">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="DeleteStock" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this stock?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

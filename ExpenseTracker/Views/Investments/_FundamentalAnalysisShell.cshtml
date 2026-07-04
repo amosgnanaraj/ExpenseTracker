@@ -1,0 +1,82 @@
+@model List<string>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" id="fa-table">
+        <thead class="table-light">
+            <tr>
+                <th class="ps-4">Symbol</th>
+                <th>Price</th>
+                <th>Market Cap</th>
+                <th>P/E (TTM)</th>
+                <th>ROCE/ROA</th>
+                <th>ROE</th>
+                <th>Yield</th>
+                <th>P/B</th>
+                <th>Category</th>
+                <th class="pe-4">Analysis</th>
+            </tr>
+        </thead>
+        <tbody id="fa-tbody">
+            <!-- Rows appended dynamically -->
+        </tbody>
+    </table>
+    <div id="fa-chunk-loading" class="text-center py-4 bg-light rounded-bottom-4 border-top">
+        <div class="spinner-border text-success spinner-border-sm me-2" role="status"></div>
+        <span class="text-success fw-bold" id="fa-progress-text">Loading 0 of @Model.Count records...</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const allSymbols = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        const chunkSize = 10;
+        const tbody = document.getElementById('fa-tbody');
+        const loadingDiv = document.getElementById('fa-chunk-loading');
+        const progressText = document.getElementById('fa-progress-text');
+
+        let currentIndex = 0;
+
+        function loadNextChunk() {
+            if (currentIndex >= allSymbols.length) {
+                loadingDiv.style.display = 'none';
+                if (allSymbols.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-5"><i class="bi bi-info-circle me-2"></i>No symbols found for fundamental analysis.</td></tr>';
+                }
+                return;
+            }
+
+            const chunk = allSymbols.slice(currentIndex, currentIndex + chunkSize);
+            progressText.innerText = `Analyzing batch: ${Math.min(currentIndex + chunkSize, allSymbols.length)} of ${allSymbols.length} records...`;
+
+            fetch('@Url.Action("GetFundamentalAnalysisChunk", "Investments")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(chunk)
+            })
+            .then(r => r.text())
+            .then(html => {
+                if (html.trim() !== '') {
+                    tbody.insertAdjacentHTML('beforeend', html);
+                }
+                currentIndex += chunkSize;
+                // Add a small delay between batches
+                setTimeout(loadNextChunk, 800);
+            })
+            .catch(e => {
+                console.error('Error loading fundamental chunk:', e);
+                tbody.insertAdjacentHTML('beforeend', `<tr><td colspan="10" class="text-center text-danger py-2 bg-danger-subtle fw-bold border-bottom">Error loading chunk starting at index ${currentIndex}. Server may be busy, retrying next batch.</td></tr>`);
+                currentIndex += chunkSize;
+                setTimeout(loadNextChunk, 2000);
+            });
+        }
+
+        if (allSymbols.length > 0) {
+            loadNextChunk();
+        } else {
+            loadingDiv.style.display = 'none';
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-5"><i class="bi bi-info-circle me-2"></i>No symbols to analyze.</td></tr>';
+        }
+    })();
+</script>

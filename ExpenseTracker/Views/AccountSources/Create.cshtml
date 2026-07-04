@@ -1,0 +1,98 @@
+@using ExpenseTracker.Models
+@model ExpenseTracker.Models.AccountSource
+
+@{
+    ViewData["Title"] = "Add Account Source";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-primary text-white py-3 rounded-top-4">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-plus-lg me-2"></i>New Account Source</h4>
+                </div>
+                <div class="card-body p-4 bg-white rounded-bottom-4">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold text-secondary"></label>
+                            <input asp-for="Name" class="form-control form-control-lg bg-light" placeholder="e.g. Chase Checking" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="AccountNumber" class="form-label fw-bold text-secondary">Account Number <span class="text-muted fw-normal">(Optional)</span></label>
+                            <input asp-for="AccountNumber" class="form-control form-control-lg bg-light font-monospace" placeholder="e.g. 123456789" />
+                            <span asp-validation-for="AccountNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label fw-bold text-secondary"></label>
+                            <select asp-for="Type" asp-items="Html.GetEnumSelectList<AccountType>()" class="form-select form-select-lg bg-light" id="accountTypeSelect">
+                                <option value="">-- Select Type --</option>
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Balance" class="form-label fw-bold text-secondary">Starting Balance</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-end-0">$</span>
+                                <input asp-for="Balance" type="number" step="0.01" class="form-control bg-light border-start-0 ps-0" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="Balance" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4" id="interestRateContainer" style="display: none;">
+                            <label asp-for="InterestRate" class="form-label fw-bold text-secondary">Interest Rate (%) <span class="text-muted fw-normal">(Optional)</span></label>
+                            <div class="input-group input-group-lg">
+                                <input asp-for="InterestRate" type="number" step="0.01" class="form-control bg-light border-end-0" placeholder="e.g. 5.5" />
+                                <span class="input-group-text bg-light">%</span>
+                            </div>
+                            <span asp-validation-for="InterestRate" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4" id="minimumPaymentContainer" style="display: none;">
+                            <label asp-for="MinimumPayment" class="form-label fw-bold text-secondary">Minimum Monthly Payment</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-end-0">$</span>
+                                <input asp-for="MinimumPayment" type="number" step="0.01" class="form-control bg-light border-start-0 ps-0" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="MinimumPayment" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Save Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            function toggleDebtFields() {
+                var selectedText = $("#accountTypeSelect option:selected").text();
+                if (selectedText === 'Loan' || selectedText === 'CreditCard') {
+                    $('#interestRateContainer').slideDown();
+                    $('#minimumPaymentContainer').slideDown();
+                } else {
+                    $('#interestRateContainer').slideUp();
+                    $('#minimumPaymentContainer').slideUp();
+                    $('#InterestRate').val(''); 
+                    $('#MinimumPayment').val('0');
+                }
+            }
+
+            $('#accountTypeSelect').change(toggleDebtFields);
+            toggleDebtFields(); // Run on load
+        });
+    </script>
+}

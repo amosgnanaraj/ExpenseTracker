@@ -1,0 +1,76 @@
+@model ExpenseTracker.Models.InvestmentsViewModel
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-6 g-3 mb-4">
+    <div class="col">
+        <div class="card border-0 shadow-sm bg-primary text-white h-100">
+            <div class="card-body p-3">
+                <h6 class="text-white-50 small text-uppercase fw-bold mb-2">Total Portfolio</h6>
+                <h3 class="fw-bold mb-1">@Model.GrandTotalValue.ToString("C0")</h3>
+                <p class="mb-0 fw-bold small @(Model.GrandTotalPL >= 0 ? "text-white" : "text-warning")">
+                    <i class="bi @(Model.GrandTotalPL >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+                    @Model.GrandTotalPL.ToString("C0") (@Model.GrandTotalPLPercentage.ToString("0.00")%)
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-3">
+                <h6 class="text-muted small text-uppercase fw-bold mb-2">Stocks</h6>
+                <h4 class="fw-bold mb-1">@Model.TotalStockValue.ToString("C0")</h4>
+                <p class="mb-0 @(Model.TotalStockPL >= 0 ? "text-success" : "text-danger") fw-bold small">
+                    <i class="bi @(Model.TotalStockPL >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+                    @Model.TotalStockPL.ToString("C0")
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-3">
+                <h6 class="text-muted small text-uppercase fw-bold mb-2">Mutual Funds</h6>
+                <h4 class="fw-bold mb-1">@Model.TotalMFValue.ToString("C0")</h4>
+                <p class="mb-0 @(Model.TotalMFPL >= 0 ? "text-success" : "text-danger") fw-bold small">
+                    <i class="bi @(Model.TotalMFPL >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+                    @Model.TotalMFPL.ToString("C0")
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-3">
+                <h6 class="text-muted small text-uppercase fw-bold mb-2">NPS</h6>
+                <h4 class="fw-bold mb-1">@Model.TotalNPSValue.ToString("C0")</h4>
+                <p class="mb-0 @(Model.TotalNPSPL >= 0 ? "text-success" : "text-danger") fw-bold small">
+                    <i class="bi @(Model.TotalNPSPL >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+                    @Model.TotalNPSPL.ToString("C0")
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-3">
+                <h6 class="text-muted small text-uppercase fw-bold mb-2">Fixed Deposits</h6>
+                <h4 class="fw-bold mb-1">@Model.TotalFDValue.ToString("C0")</h4>
+                <p class="mb-0 text-success fw-bold small">
+                    <i class="bi bi-caret-up-fill"></i>
+                    @Model.TotalFDPL.ToString("C0")
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-3">
+                <h6 class="text-muted small text-uppercase fw-bold mb-2">EPF</h6>
+                <h4 class="fw-bold mb-1">@Model.TotalEPFValue.ToString("C0")</h4>
+                <p class="mb-0 @(Model.TotalEPFPL >= 0 ? "text-success" : "text-danger") fw-bold small">
+                    <i class="bi @(Model.TotalEPFPL >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+                    @Model.TotalEPFPL.ToString("C0")
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

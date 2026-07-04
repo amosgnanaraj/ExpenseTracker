@@ -1,0 +1,1330 @@
+@model ExpenseTracker.Models.QuickEntryViewModel
+
+@{
+    ViewData["Title"] = "Quick Entry";
+    var currentYear = DateTime.Now.Year;
+}
+
+<div class="container-fluid mt-4">
+    <!-- Hidden fields to absorb aggressive browser autofill -->
+    <div style="position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none;" aria-hidden="true">
+        <input type="text" id="fakeUsername" name="fakeUsername" autocomplete="username" tabindex="-1">
+        <input type="password" id="fakePassword" name="fakePassword" autocomplete="current-password" tabindex="-1">
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Quick Entry</h3>
+        <button class="btn btn-sm btn-outline-success rounded-pill fw-bold" type="button" data-bs-toggle="modal" data-bs-target="#importStatementModal">
+            <i class="bi bi-file-earmark-excel me-1"></i>Import Bank Statement
+        </button>
+    </div>
+
+    <div id="alertPlaceholder"></div>
+
+    <!-- Inline Form Card -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form id="quickEntryForm" method="post" asp-action="SubmitTransaction">
+                @Html.AntiForgeryToken()
+                <div class="row g-2 align-items-end">
+                    
+                    <div class="col-md-2">
+                        <label asp-for="Date" class="form-label small fw-bold text-secondary mb-1"></label>
+                        <input asp-for="Date" class="form-control form-control-sm bg-light" type="date" />
+                        <span asp-validation-for="Date" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-1">
+                        <label asp-for="Type" class="form-label small fw-bold text-secondary mb-1">Type</label>
+                        <select asp-for="Type" id="transactionType" class="form-select form-select-sm bg-light"
+                                asp-items="Html.GetEnumSelectList<ExpenseTracker.Models.TransactionType>()">
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="AccountSourceId" class="form-label small fw-bold text-secondary mb-1">Account</label>
+                        <select asp-for="AccountSourceId" asp-items="Model.AccountSources" class="form-select form-select-sm bg-light">
+                            <option value="">-- Select --</option>
+                        </select>
+                        <span asp-validation-for="AccountSourceId" class="text-danger small"></span>
+                    </div>
+
+                    <div id="transferToSection" class="col-md-2" style="display:none;">
+                        <label asp-for="TransferToAccountSourceId" class="form-label small fw-bold text-secondary mb-1">Transfer To</label>
+                        <select asp-for="TransferToAccountSourceId" asp-items="Model.AccountSources" class="form-select form-select-sm bg-light">
+                            <option value="">-- Select --</option>
+                        </select>
+                        <span asp-validation-for="TransferToAccountSourceId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label asp-for="CategoryId" class="form-label small fw-bold text-secondary mb-0">Category</label>
+                            <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#manageCategoriesModal" title="Manage Categories">
+                                <i class="bi bi-gear text-primary"></i>
+                            </button>
+                        </div>
+                        <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select form-select-sm bg-light">
+                            <option value="">-- Select --</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                    </div>
+
+                    <div id="salarySection" class="col-md-2" style="display:none;">
+                        <label class="form-label small fw-bold text-secondary mb-1">Salary Period</label>
+                        <div class="d-flex gap-1">
+                            <select asp-for="SalaryMonth" id="salaryMonth" class="form-select form-select-sm bg-light">
+                                <option value="">Month</option>
+                                <option value="1">Jan</option>
+                                <option value="2">Feb</option>
+                                <option value="3">Mar</option>
+                                <option value="4">Apr</option>
+                                <option value="5">May</option>
+                                <option value="6">Jun</option>
+                                <option value="7">Jul</option>
+                                <option value="8">Aug</option>
+                                <option value="9">Sep</option>
+                                <option value="10">Oct</option>
+                                <option value="11">Nov</option>
+                                <option value="12">Dec</option>
+                            </select>
+                            <select asp-for="SalaryYear" id="salaryYear" class="form-select form-select-sm bg-light">
+                                <option value="">Year</option>
+                                @for (int y = currentYear - 2; y <= currentYear + 2; y++)
+                                {
+                                    <option value="@y">@y</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-1">
+                        <label asp-for="Amount" class="form-label small fw-bold text-secondary mb-1"></label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-muted border-end-0">₹</span>
+                            <input asp-for="Amount" class="form-control bg-light border-start-0 ps-0" type="number" step="0.01" min="0.01" placeholder="0.00" />
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="Description" class="form-label small fw-bold text-secondary mb-1">Description (Opt)</label>
+                        <input asp-for="Description" class="form-control form-control-sm bg-light" placeholder="What was this for?" autocomplete="off" />
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md d-grid">
+                        <button type="submit" id="submitBtn" class="btn btn-primary btn-sm rounded-3 fw-bold shadow-sm">
+                            <span class="spinner-border spinner-border-sm d-none" id="submitSpinner" role="status" aria-hidden="true"></span>
+                            <span id="submitText">Save</span>
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- History DataGrid Card -->
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Transactions</h5>
+            <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+                <i class="bi bi-filter me-1"></i>Filter
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <!-- Filter Bar -->
+            <div class="collapse" id="filterCollapse">
+                <div class="p-3 border-bottom bg-light bg-opacity-50 shadow-sm">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-3 col-lg-4">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text border-end-0 bg-white shadow-none"><i class="bi bi-search text-muted"></i></span>
+                                <input type="search" id="filterSearch" class="form-control border-start-0 ps-0 shadow-none" placeholder="Search description..." autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white border-end-0 text-muted small">From</span>
+                                <input type="date" id="filterDateFrom" class="form-control border-start-0 ps-1 shadow-none" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white border-end-0 text-muted small">To</span>
+                                <input type="date" id="filterDateTo" class="form-control border-start-0 ps-1 shadow-none" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <select id="filterType" class="form-select form-select-sm shadow-none">
+                                <option value="">All Types</option>
+                                @foreach (var item in Html.GetEnumSelectList<ExpenseTracker.Models.TransactionType>())
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-1 col-lg-2 text-end">
+                            <button id="clearFiltersBtn" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold px-3">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row g-2 align-items-center mt-2">
+                        <div class="col-md-4">
+                            <select id="filterCategory" class="form-select form-select-sm shadow-none" asp-items="Model.Categories">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="filterAccount" class="form-select form-select-sm shadow-none" asp-items="Model.AccountSources">
+                                <option value="">All Accounts</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-borderless align-middle mb-0" id="transactionsTable">
+                    <thead class="table-light text-muted small">
+                        <tr>
+                            <th class="ps-4">Date</th>
+                            <th>Type</th>
+                            <th>Account</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionList">
+                        @if (!Model.RecentTransactions.Any())
+                        {
+                            <tr id="emptyRow">
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    No recent transactions found.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model.RecentTransactions)
+                            {
+                                var typeBadge = item.Type switch
+                                {
+                                    ExpenseTracker.Models.TransactionType.Credit => "bg-success",
+                                    ExpenseTracker.Models.TransactionType.Debit => "bg-danger",
+                                    ExpenseTracker.Models.TransactionType.Transfer => "bg-info text-dark",
+                                    _ => "bg-secondary"
+                                };
+                                var amountClass = item.Type == ExpenseTracker.Models.TransactionType.Credit ? "text-success" : "text-danger";
+                                var amountPrefix = item.Type == ExpenseTracker.Models.TransactionType.Credit ? "+" : "-";
+                                var transferInfo = item.Type == ExpenseTracker.Models.TransactionType.Transfer && item.TransferToAccountSource != null
+                                    ? $" → {item.TransferToAccountSource.Name}" : "";
+                                
+                                bool isSalary = item.Category?.Name?.Contains("Salary", StringComparison.OrdinalIgnoreCase) ?? false;
+                                var displayAmount = isSalary ? "*****" : item.Amount.ToString("C");
+                                var salaryClass = isSalary ? "salary-masked clickable" : "";
+
+                                <tr class="border-bottom">
+                                    <td class="ps-4 text-muted small">@item.Date.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                                    <td><span class="badge rounded-pill @typeBadge">@item.Type</span></td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@item.AccountSource?.Name</span>
+                                        @if (!string.IsNullOrEmpty(transferInfo))
+                                        {
+                                            <span class="text-muted small">@transferInfo</span>
+                                        }
+                                    </td>
+                                    <td class="category-cell" data-id="@item.Id" data-category-id="@item.CategoryId">
+                                        <div class="category-display clickable d-inline-flex align-items-center" title="Click to edit category">
+                                            <span class="badge bg-light text-primary border category-name-span">@item.Category?.Name</span>
+                                            @if (isSalary && item.SalaryMonth.HasValue && item.SalaryYear.HasValue)
+                                            {
+                                                var monthName = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(item.SalaryMonth.Value);
+                                                <span class="badge bg-light text-muted border small ms-1 category-salary-span">@monthName @item.SalaryYear</span>
+                                            }
+                                            <i class="bi bi-pencil-square text-muted ms-1 small opacity-50"></i>
+                                        </div>
+                                        <div class="category-edit d-none">
+                                            <select class="form-select form-select-sm inline-category-select">
+                                                <option value="">Select...</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 250px;">@item.Description</td>
+                                    <td class="text-end fw-bold font-monospace @amountClass @salaryClass" data-id="@item.Id" data-salary="@isSalary.ToString().ToLower()">@amountPrefix@displayAmount</td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill edit-btn" data-id="@item.Id">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill delete-btn" data-id="@item.Id">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination Bar -->
+            <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top bg-white rounded-bottom-4" id="paginationBar">
+                <span class="text-muted small" id="paginationInfo">Loading...</span>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+<!-- Edit Transaction Modal -->
+<div class="modal fade" id="editTransactionModal" tabindex="-1" aria-labelledby="editTransactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="editTransactionModalLabel"><i class="bi bi-pencil-square text-primary me-2"></i>Edit Transaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editTransactionForm" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="editId" />
+                <div class="modal-body py-4">
+                    <div id="editAlertPlaceholder"></div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-secondary mb-1">Date</label>
+                            <input name="Date" id="editDate" class="form-control bg-light" type="date" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-secondary mb-1">Type</label>
+                            <select name="Type" id="editType" class="form-select bg-light" required>
+                                @foreach (var item in Html.GetEnumSelectList<ExpenseTracker.Models.TransactionType>())
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-secondary mb-1">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted border-end-0">₹</span>
+                                <input name="Amount" id="editAmount" class="form-control bg-light border-start-0 ps-0" type="number" step="0.01" min="0.01" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary mb-1">Account</label>
+                            <select name="AccountSourceId" id="editAccountSourceId" class="form-select bg-light" required>
+                                <option value="">-- Select --</option>
+                                @foreach (var item in Model.AccountSources)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 editTransferToSection" style="display:none;">
+                            <label class="form-label small fw-bold text-secondary mb-1">Transfer To</label>
+                            <select name="TransferToAccountSourceId" id="editTransferToAccountSourceId" class="form-select bg-light">
+                                <option value="">-- Select --</option>
+                                @foreach (var item in Model.AccountSources)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary mb-1">Category</label>
+                            <select name="CategoryId" id="editCategoryId" class="form-select bg-light" required>
+                                <option value="">-- Select --</option>
+                                @foreach (var item in Model.Categories)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 editSalarySection" style="display:none;">
+                            <label class="form-label small fw-bold text-secondary mb-1">Salary Month/Year</label>
+                            <div class="d-flex gap-2">
+                                <select name="SalaryMonth" id="editSalaryMonth" class="form-select bg-light">
+                                    <option value="">Month</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                                <select name="SalaryYear" id="editSalaryYear" class="form-select bg-light">
+                                    <option value="">Year</option>
+                                    @for (int y = currentYear - 2; y <= currentYear + 2; y++)
+                                    {
+                                        <option value="@y">@y</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-secondary mb-1">Description</label>
+                            <input name="Description" id="editDescription" class="form-control bg-light" placeholder="What was this for?" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="editSubmitBtn" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                        <span class="spinner-border spinner-border-sm d-none" id="editSubmitSpinner" role="status" aria-hidden="true"></span>
+                        <span id="editSubmitText">Update Transaction</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Import Statement Modal -->
+<div class="modal fade" id="importStatementModal" tabindex="-1" aria-labelledby="importStatementModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="importStatementModalLabel"><i class="bi bi-file-earmark-excel text-success me-2"></i>Import Bank Statement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="importStatementForm" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="modal-body py-4">
+                    <div id="importAlertPlaceholder"></div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">Select Account</label>
+                        <select name="accountId" class="form-select bg-light" required>
+                            @foreach (var account in Model.AccountSources)
+                            {
+                                // Default to SBI if possible (Account ID 2)
+                                <option value="@account.Value" selected="@(account.Value == "2")">@account.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">Excel File</label>
+                        <input type="file" name="statementFile" class="form-control bg-light" accept=".xls,.xlsx" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">Password (if encrypted)</label>
+                        <input type="password" name="password" class="form-control bg-light" placeholder="Leave blank if no password" />
+                    </div>
+                    <div class="small text-muted">
+                        <i class="bi bi-info-circle me-1"></i>Supports SBI and Axis Bank Excel statements. Ensure the correct account is selected.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="importSubmitBtn" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                        <span class="spinner-border spinner-border-sm d-none" id="importSubmitSpinner" role="status" aria-hidden="true"></span>
+                        <span id="importSubmitText">Start Import</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Manage Categories Modal -->
+<div class="modal fade" id="manageCategoriesModal" tabindex="-1" aria-labelledby="manageCategoriesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="manageCategoriesModalLabel"><i class="bi bi-tags text-primary me-2"></i>Manage Categories</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div id="categoryAlertPlaceholder"></div>
+                
+                <!-- Add/Edit Category Form -->
+                <div class="card bg-light border-0 mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3" id="categoryFormTitle">Add New Category</h6>
+                        <form id="categoryForm">
+                            <input type="hidden" id="categoryId" name="id" />
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Name</label>
+                                    <input type="text" id="categoryName" name="name" class="form-control form-control-sm" required autocomplete="off" />
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Parent Category (Optional)</label>
+                                    <select id="parentCategoryId" name="parentCategoryId" class="form-select form-select-sm">
+                                        <option value="">-- None (Top Level) --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold" id="categorySubmitBtn">Save</button>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-end" id="categoryCancelBtnContainer" style="display:none;">
+                                <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none" id="cancelCategoryEditBtn">Cancel Edit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Categories List -->
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-hover table-sm align-middle mb-0" id="categoriesTable">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Name</th>
+                                <th>Parent</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesListBody">
+                            <tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Toggle Transfer To field visibility
+            function toggleTransferField() {
+                var selectedType = $('#transactionType').val();
+                if (selectedType === 'Transfer' || selectedType === '2') {
+                    $('#transferToSection').show();
+                } else {
+                    $('#transferToSection').hide();
+                    $('#TransferToAccountSourceId').val('');
+                }
+            }
+
+            $('#transactionType').on('change', toggleTransferField);
+            toggleTransferField(); // Initial state
+
+            // Toggle Salary fields visibility
+            function toggleSalaryFields() {
+                var selectedCategoryText = $('#CategoryId option:selected').text();
+                if (selectedCategoryText.indexOf('Salary') > -1) {
+                    $('#salarySection').show();
+                } else {
+                    $('#salarySection').hide();
+                    $('#salaryMonth').val('');
+                    $('#salaryYear').val('');
+                }
+            }
+
+            $('#CategoryId').on('change', toggleSalaryFields);
+            toggleSalaryFields(); // Initial state
+
+            function toggleEditSalaryFields() {
+                var selectedCategoryText = $('#editCategoryId option:selected').text();
+                if (selectedCategoryText.indexOf('Salary') > -1) {
+                    $('.editSalarySection').show();
+                } else {
+                    $('.editSalarySection').hide();
+                    $('#editSalaryMonth').val('');
+                    $('#editSalaryYear').val('');
+                }
+            }
+
+            $('#editCategoryId').on('change', toggleEditSalaryFields);
+
+            $('#quickEntryForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                if (!$form.valid()) {
+                    return;
+                }
+
+                // Validate transfer target if Transfer type
+                var selectedType = $('#transactionType').val();
+                if ((selectedType === 'Transfer' || selectedType === '2') && !$('#TransferToAccountSourceId').val()) {
+                    $('#alertPlaceholder').html(
+                        '<div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">' +
+                        '<i class="bi bi-exclamation-triangle-fill me-2"></i>Please select a destination account for the transfer.' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
+                    );
+                    return;
+                }
+
+                var $btn = $('#submitBtn');
+                var $spinner = $('#submitSpinner');
+                var $btnText = $('#submitText');
+                var $alertPlaceholder = $('#alertPlaceholder');
+
+                $btn.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $btnText.text('');
+                $alertPlaceholder.empty();
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+
+                            // Reset fields for rapid entry
+                            $('#Amount').val('');
+                            $('#Description').val('');
+                            $('#salaryMonth').val('');
+                            $('#salaryYear').val('');
+                            toggleSalaryFields();
+                            $('#Amount').focus();
+
+                            // Reload page 1 to show the new transaction at the top
+                            loadPage(1);
+
+                        } else {
+                            // Show error alert
+                            var errorMsg = response.message;
+                            if (response.errors && response.errors.length > 0) {
+                                errorMsg += '<ul><li>' + response.errors.join('</li><li>') + '</li></ul>';
+                            }
+                            $alertPlaceholder.html(
+                                '<div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">' +
+                                '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + errorMsg +
+                                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
+                            );
+                        }
+                    },
+                    error: function () {
+                        $alertPlaceholder.html(
+                            '<div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">' +
+                            '<i class="bi bi-x-circle-fill me-2"></i>An unexpected error occurred. Please try again.' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
+                        );
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false);
+                        $spinner.addClass('d-none');
+                        $btnText.text('Save');
+                    }
+                });
+            });
+
+            // ── Category Management ──────────────────────────
+            const manageCategoriesModalEl = document.getElementById('manageCategoriesModal');
+            let categoriesData = [];
+
+            manageCategoriesModalEl.addEventListener('show.bs.modal', function () {
+                loadCategoriesList();
+            });
+
+            manageCategoriesModalEl.addEventListener('hidden.bs.modal', function () {
+                resetCategoryForm();
+                $('#categoryAlertPlaceholder').empty();
+                refreshCategoryDropdowns();
+            });
+
+            function loadCategoriesList() {
+                $.get('@Url.Action("GetCategoriesList", "QuickEntry")', function (data) {
+                    if (data.success) {
+                        categoriesData = data.categories;
+                        renderCategoriesTable();
+                        updateParentCategoryDropdown();
+                    }
+                });
+            }
+
+            function renderCategoriesTable() {
+                const tbody = $('#categoriesListBody');
+                tbody.empty();
+                if (categoriesData.length === 0) {
+                    tbody.html('<tr><td colspan="3" class="text-center text-muted">No categories found.</td></tr>');
+                    return;
+                }
+                
+                categoriesData.forEach(c => {
+                    const parentName = c.parentCategoryName ? `<span class="badge bg-light text-secondary border">${c.parentCategoryName}</span>` : '<span class="text-muted small">-</span>';
+                    tbody.append(`
+                        <tr class="border-bottom">
+                            <td class="fw-medium">${c.name}</td>
+                            <td>${parentName}</td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill edit-category-btn p-1 me-1" data-id="${c.id}" data-name="${c.name}" data-parent="${c.parentCategoryId || ''}" title="Edit">
+                                    <i class="bi bi-pencil" style="font-size: 0.75rem;"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill delete-category-btn p-1" data-id="${c.id}" title="Delete">
+                                    <i class="bi bi-trash" style="font-size: 0.75rem;"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+
+            function updateParentCategoryDropdown() {
+                const select = $('#parentCategoryId');
+                const currentVal = select.val();
+                select.empty().append('<option value="">-- None (Top Level) --</option>');
+                categoriesData.forEach(c => {
+                    // Prevent setting a category as its own parent in the dropdown if editing
+                    const editingId = $('#categoryId').val();
+                    if (!editingId || c.id != editingId) {
+                        select.append(`<option value="${c.id}">${c.name}</option>`);
+                    }
+                });
+                select.val(currentVal);
+            }
+
+            function resetCategoryForm() {
+                $('#categoryId').val('');
+                $('#categoryName').val('');
+                $('#parentCategoryId').val('');
+                $('#categoryFormTitle').text('Add New Category');
+                $('#categoryCancelBtnContainer').hide();
+                $('#categorySubmitBtn').text('Save');
+                updateParentCategoryDropdown();
+            }
+
+            $('#cancelCategoryEditBtn').on('click', function() {
+                resetCategoryForm();
+                $('#categoryAlertPlaceholder').empty();
+            });
+
+            $(document).on('click', '.edit-category-btn', function() {
+                const btn = $(this);
+                $('#categoryId').val(btn.data('id'));
+                $('#categoryName').val(btn.data('name'));
+                
+                updateParentCategoryDropdown(); // refresh dropdown first to exclude self
+                $('#parentCategoryId').val(btn.data('parent'));
+
+                $('#categoryFormTitle').text('Edit Category');
+                $('#categoryCancelBtnContainer').show();
+                $('#categorySubmitBtn').text('Update');
+                $('#categoryAlertPlaceholder').empty();
+            });
+
+            $('#categoryForm').on('submit', function (e) {
+                e.preventDefault();
+                const id = $('#categoryId').val();
+                const name = $('#categoryName').val();
+                const parentId = $('#parentCategoryId').val();
+                
+                const url = id ? '@Url.Action("EditCategory", "QuickEntry")' : '@Url.Action("AddCategory", "QuickEntry")';
+                const data = {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val(),
+                    name: name,
+                    parentCategoryId: parentId || null
+                };
+                if (id) data.id = id;
+
+                const btn = $('#categorySubmitBtn');
+                btn.prop('disabled', true).text('Saving...');
+
+                $.post(url, data, function (response) {
+                    if (response.success) {
+                        $('#categoryAlertPlaceholder').html(`<div class="alert alert-success py-2 px-3 small mb-3"><i class="bi bi-check-circle-fill me-2"></i>${response.message}</div>`);
+                        resetCategoryForm();
+                        loadCategoriesList();
+                        
+                        // auto clear success message after 3s
+                        setTimeout(() => $('#categoryAlertPlaceholder').empty(), 3000);
+                    } else {
+                        $('#categoryAlertPlaceholder').html(`<div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>${response.message}</div>`);
+                    }
+                }).fail(function () {
+                    $('#categoryAlertPlaceholder').html(`<div class="alert alert-danger py-2 px-3 small mb-3">An error occurred.</div>`);
+                }).always(function () {
+                    btn.prop('disabled', false);
+                    btn.text(id ? 'Update' : 'Save');
+                });
+            });
+
+            $(document).on('click', '.delete-category-btn', function () {
+                if (!confirm('Are you sure you want to delete this category?')) return;
+
+                const id = $(this).data('id');
+                const btn = $(this);
+                btn.prop('disabled', true);
+
+                $.post('@Url.Action("DeleteCategory", "QuickEntry")', {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val(),
+                    id: id
+                }, function (response) {
+                    if (response.success) {
+                        $('#categoryAlertPlaceholder').html(`<div class="alert alert-success py-2 px-3 small mb-3"><i class="bi bi-check-circle-fill me-2"></i>${response.message}</div>`);
+                        if ($('#categoryId').val() == id) {
+                            resetCategoryForm();
+                        }
+                        loadCategoriesList();
+                        setTimeout(() => $('#categoryAlertPlaceholder').empty(), 3000);
+                    } else {
+                        $('#categoryAlertPlaceholder').html(`<div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>${response.message}</div>`);
+                        btn.prop('disabled', false);
+                    }
+                }).fail(function () {
+                    $('#categoryAlertPlaceholder').html(`<div class="alert alert-danger py-2 px-3 small mb-3">An error occurred.</div>`);
+                    btn.prop('disabled', false);
+                });
+            });
+
+            function refreshCategoryDropdowns() {
+                $.get('@Url.Action("GetGroupedCategoriesJson", "QuickEntry")', function (data) {
+                    if (data.success) {
+                        const newOptionsHtml = data.categories.map(c => {
+                            if (c.group) {
+                                // Since flat list is returned, we need to group them.
+                                // It's easier to process them on the client side.
+                                return null;
+                            }
+                        });
+                        
+                        // Let's build the HTML string for <optgroup>s and <option>s
+                        let grouped = {};
+                        data.categories.forEach(c => {
+                            let g = c.group || "Main Categories";
+                            if(!grouped[g]) grouped[g] = [];
+                            grouped[g].push(c);
+                        });
+
+                        let html = '<option value="">-- Select --</option>';
+                        for (let g in grouped) {
+                            html += `<optgroup label="${g}">`;
+                            grouped[g].forEach(c => {
+                                html += `<option value="${c.value}">${c.text}</option>`;
+                            });
+                            html += `</optgroup>`;
+                        }
+
+                        // Save current selections
+                        let currentCat = $('#CategoryId').val();
+                        let currentEditCat = $('#editCategoryId').val();
+                        let currentFilterCat = $('#filterCategory').val();
+
+                        // Update dropdowns
+                        $('#CategoryId').html(html);
+                        $('#editCategoryId').html(html);
+                        $('#filterCategory').html('<option value="">All Categories</option>' + html.replace('<option value="">-- Select --</option>', ''));
+
+                        // Restore selections
+                        if (currentCat) $('#CategoryId').val(currentCat);
+                        if (currentEditCat) $('#editCategoryId').val(currentEditCat);
+                        if (currentFilterCat) $('#filterCategory').val(currentFilterCat);
+                    }
+                });
+            }
+            
+            // Edit functionality
+            const editModal = new bootstrap.Modal(document.getElementById('editTransactionModal'));
+            
+            $(document).on('click', '.edit-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                const id = $(this).data('id');
+                const $row = $(this).closest('tr');
+                const isSalary = $row.find('.salary-masked').length > 0 || $row.find('[data-salary="true"]').length > 0;
+
+                if (isSalary) {
+                    currentSalaryId = id;
+                    currentSalaryCell = $row.find('[data-salary="true"]');
+                    isEditing = true;
+                    $('#pinInput').val('');
+                    $('#pinError').addClass('d-none');
+                    pinModal.show();
+                    setTimeout(() => $('#pinInput').focus(), 500);
+                } else {
+                    openEditModal(id);
+                }
+                return false;
+            });
+
+            function openEditModal(id, pin) {
+                const $btn = $(`.edit-btn[data-id="${id}"]`);
+                
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
+
+                $.get('@Url.Action("GetTransaction", "QuickEntry")', { id: id, pin: pin }, function(data) {
+                    $('#editId').val(data.id);
+                    $('#editDate').val(data.date);
+                    $('#editType').val(data.type);
+                    $('#editAmount').val(data.amount);
+                    $('#editAccountSourceId').val(data.accountSourceId);
+                    $('#editCategoryId').val(data.categoryId);
+                    $('#editDescription').val(data.description);
+                    $('#editSalaryMonth').val(data.salaryMonth || '');
+                    $('#editSalaryYear').val(data.salaryYear || '');
+                    toggleEditSalaryFields();
+                    
+                    if (data.type == 2) { // Transfer
+                        $('.editTransferToSection').show();
+                        $('#editTransferToAccountSourceId').val(data.transferToAccountSourceId);
+                    } else {
+                        $('.editTransferToSection').hide();
+                        $('#editTransferToAccountSourceId').val('');
+                    }
+                    
+                    $('#editAlertPlaceholder').empty();
+                    editModal.show();
+                }).fail(function() {
+                    alert('Could not fetch transaction details.');
+                }).always(function() {
+                    $btn.prop('disabled', false).html('<i class="bi bi-pencil"></i>');
+                });
+            }
+
+            $('#editType').on('change', function() {
+                if ($(this).val() == '2' || $(this).val() == 'Transfer') {
+                    $('.editTransferToSection').show();
+                } else {
+                    $('.editTransferToSection').hide();
+                    $('#editTransferToAccountSourceId').val('');
+                }
+            });
+
+            $('#editTransactionForm').on('submit', function(e) {
+                e.preventDefault();
+                const id = $('#editId').val();
+                const $form = $(this);
+                const $btn = $('#editSubmitBtn');
+                const $spinner = $('#editSubmitSpinner');
+                const $btnText = $('#editSubmitText');
+                
+                $btn.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $btnText.addClass('d-none');
+                
+                $.ajax({
+                    url: '@Url.Action("UpdateTransaction", "QuickEntry")/' + id,
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            const t = response.transaction;
+                            let typeBadgeClass = 'bg-secondary';
+                            let amountClass = 'text-danger';
+                            let amountPrefix = '-';
+
+                            if (t.type === 'Credit') {
+                                typeBadgeClass = 'bg-success';
+                                amountClass = 'text-success';
+                                amountPrefix = '+';
+                            } else if (t.type === 'Debit') {
+                                typeBadgeClass = 'bg-danger';
+                            } else if (t.type === 'Transfer') {
+                                typeBadgeClass = 'bg-info text-dark';
+                            }
+
+                            const transferInfo = t.transferToName ? ' → ' + t.transferToName : '';
+                            
+                            const updatedRow = renderRow(t);
+                            const $row = $('button.edit-btn[data-id="' + id + '"]').closest('tr');
+                            $row.replaceWith(updatedRow);
+                            const $newRow = $('button.edit-btn[data-id="' + id + '"]').closest('tr');
+                            $newRow.css('background-color', '#e8f5e9');
+                            setTimeout(() => { $newRow.css('background-color', 'transparent'); }, 1000);
+                            
+                            editModal.hide();
+                        } else {
+                            $('#editAlertPlaceholder').html('<div class="alert alert-danger mb-3">' + response.message + '</div>');
+                        }
+                    },
+                    error: function() {
+                        $('#editAlertPlaceholder').html('<div class="alert alert-danger mb-3">An error occurred.</div>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false);
+                        $spinner.addClass('d-none');
+                        $btnText.removeClass('d-none');
+                    }
+                });
+            });
+
+            // Delete functionality
+            $(document).on('click', '.delete-btn', function() {
+                const id = $(this).data('id');
+                const $btn = $(this);
+                
+                if (confirm('Are you sure you want to delete this transaction? This will automatically reverse the balance impact on the associated account(s).')) {
+                    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
+                    
+                    $.ajax({
+                        url: '@Url.Action("DeleteTransaction", "QuickEntry")/' + id,
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Refresh current page
+                                loadPage(currentPage);
+                                
+                                // Show success toast/alert
+                                $('#alertPlaceholder').html(
+                                    '<div class="alert alert-success alert-dismissible fade show mb-3" role="alert">' +
+                                    '<i class="bi bi-check-circle-fill me-2"></i>' + response.message +
+                                    '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
+                                );
+                            } else {
+                                alert(response.message);
+                                $btn.prop('disabled', false).html('<i class="bi bi-trash"></i>');
+                            }
+                        },
+                        error: function() {
+                            alert('An error occurred while deleting the transaction.');
+                            $btn.prop('disabled', false).html('<i class="bi bi-trash"></i>');
+                        }
+                    });
+                }
+            });
+
+            // ── Pagination ─────────────────────────────────
+            const PAGE_SIZE = 15;
+            let currentPage = 1;
+
+            function renderRow(t) {
+                let typeBadgeClass = 'bg-secondary', amountClass = 'text-danger', amountPrefix = '-';
+                if (t.type === 'Credit')   { typeBadgeClass = 'bg-success'; amountClass = 'text-success'; amountPrefix = '+'; }
+                else if (t.type === 'Debit')    { typeBadgeClass = 'bg-danger'; }
+                else if (t.type === 'Transfer') { typeBadgeClass = 'bg-info text-dark'; }
+                
+                const transferInfo = t.transferToName
+                    ? `<span class="text-muted small"> → ${t.transferToName}</span>` : '';
+                
+                const displayAmount = t.isSalary ? '*****' : t.amount;
+                const salaryClass = t.isSalary ? 'salary-masked clickable' : '';
+                const salaryAttr = t.isSalary ? `data-salary="true" data-id="${t.id}"` : '';
+
+                let categorySubText = '';
+                if (t.isSalary && t.salaryMonth && t.salaryYear) {
+                    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    categorySubText = ` <span class="badge bg-light text-muted border small">${months[t.salaryMonth - 1]} ${t.salaryYear}</span>`;
+                }
+
+                return `<tr class="border-bottom">
+                    <td class="ps-4 text-muted small">${t.date}</td>
+                    <td><span class="badge rounded-pill ${typeBadgeClass}">${t.type}</span></td>
+                    <td><span class="badge bg-light text-dark border">${t.accountName}</span>${transferInfo}</td>
+                    <td class="category-cell" data-id="${t.id}" data-category-id="${t.categoryId}">
+                        <div class="category-display clickable d-inline-flex align-items-center" title="Click to edit category">
+                            <span class="badge bg-light text-primary border category-name-span">${t.categoryName}</span>${categorySubText ? `<span class="ms-1">${categorySubText}</span>` : ''}
+                            <i class="bi bi-pencil-square text-muted ms-1 small opacity-50"></i>
+                        </div>
+                        <div class="category-edit d-none">
+                            <select class="form-select form-select-sm inline-category-select">
+                                <option value="">Select...</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td class="text-truncate" style="max-width:250px;">${t.description}</td>
+                    <td class="text-end fw-bold font-monospace ${amountClass} ${salaryClass}" ${salaryAttr}>${amountPrefix}${displayAmount}</td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill edit-btn" data-id="${t.id}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill delete-btn" data-id="${t.id}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            }
+
+            function loadPage(page) {
+                const filters = {
+                    page: page,
+                    pageSize: PAGE_SIZE,
+                    searchTerm: $('#filterSearch').val(),
+                    dateFrom: $('#filterDateFrom').val(),
+                    dateTo: $('#filterDateTo').val(),
+                    type: $('#filterType').val(),
+                    categoryId: $('#filterCategory').val(),
+                    accountId: $('#filterAccount').val()
+                };
+
+                $('#transactionList').html('<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Loading...</td></tr>');
+                $.get('@Url.Action("GetTransactionsPage", "QuickEntry")', filters, function(data) {
+                    currentPage = data.page;
+                    const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE));
+                    const start = (page - 1) * PAGE_SIZE + 1;
+                    const end   = Math.min(page * PAGE_SIZE, data.totalCount);
+
+                    if (data.rows.length === 0) {
+                        let msg = data.error ? 'Error: ' + data.error : 'No transactions found.';
+                        $('#transactionList').html('<tr><td colspan="7" class="text-center py-4 text-muted">' + msg + '</td></tr>');
+                    } else {
+                        $('#transactionList').html(data.rows.map(renderRow).join(''));
+                    }
+
+                    $('#paginationInfo').text(
+                        data.totalCount > 0 ? `Showing ${start}–${end} of ${data.totalCount} transactions` : '0 transactions'
+                    );
+
+                    const $c = $('#paginationControls').empty();
+                    $c.append(`<li class="page-item ${page<=1?'disabled':''}"><a class="page-link" href="#" data-page="${page-1}">‹</a></li>`);
+                    const delta = 2, rs = Math.max(1, page - delta), re = Math.min(totalPages, page + delta);
+                    if (rs > 1) {
+                        $c.append(`<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`);
+                        if (rs > 2) $c.append('<li class="page-item disabled"><span class="page-link">…</span></li>');
+                    }
+                    for (let i = rs; i <= re; i++) {
+                        $c.append(`<li class="page-item ${i===page?'active':''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`);
+                    }
+                    if (re < totalPages) {
+                        if (re < totalPages - 1) $c.append('<li class="page-item disabled"><span class="page-link">…</span></li>');
+                        $c.append(`<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`);
+                    }
+                    $c.append(`<li class="page-item ${page>=totalPages?'disabled':''}"><a class="page-link" href="#" data-page="${page+1}">›</a></li>`);
+                });
+            }
+
+            $(document).on('click', '#paginationControls a.page-link', function(e) {
+                e.preventDefault();
+                const p = parseInt($(this).data('page'));
+                if (!isNaN(p) && p >= 1) loadPage(p);
+            });
+
+            // Filter Event Handlers
+            let searchTimeout;
+            $('#filterSearch').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => loadPage(1), 400);
+            });
+
+            $('#filterDateFrom, #filterDateTo, #filterType, #filterCategory, #filterAccount').on('change', function() {
+                loadPage(1);
+            });
+
+            $('#clearFiltersBtn').on('click', function() {
+                $('#filterSearch, #filterDateFrom, #filterDateTo, #filterType, #filterCategory, #filterAccount').val('');
+                loadPage(1);
+            });
+
+            $('#importStatementForm').on('submit', function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                var $btn = $('#importSubmitBtn');
+                var $spinner = $('#importSubmitSpinner');
+                var $btnText = $('#importSubmitText');
+                var $alertPlaceholder = $('#importAlertPlaceholder');
+
+                $btn.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $btnText.text('Importing...');
+                $alertPlaceholder.empty();
+
+                $.ajax({
+                    url: '@Url.Action("ImportStatement", "QuickEntry")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $alertPlaceholder.html(
+                                '<div class="alert alert-success mb-3">' +
+                                '<i class="bi bi-check-circle-fill me-2"></i>' + response.message +
+                                '</div>'
+                            );
+                            setTimeout(function () {
+                                bootstrap.Modal.getInstance(document.getElementById('importStatementModal')).hide();
+                                loadPage(1);
+                                $('#importStatementForm')[0].reset();
+                                $alertPlaceholder.empty();
+                            }, 2000);
+                        } else {
+                            $alertPlaceholder.html(
+                                '<div class="alert alert-danger mb-3">' +
+                                '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + response.message +
+                                '</div>'
+                            );
+                        }
+                    },
+                    error: function () {
+                        $alertPlaceholder.html(
+                            '<div class="alert alert-danger mb-3">' +
+                            '<i class="bi bi-x-circle-fill me-2"></i>An error occurred during upload.' +
+                            '</div>'
+                        );
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false);
+                        $spinner.addClass('d-none');
+                        $btnText.text('Start Import');
+                    }
+                });
+            });
+
+            loadPage(1); // initial page load
+
+            // ── PIN Authentication ─────────────────────────
+            const pinModal = new bootstrap.Modal(document.getElementById('pinAuthModal'));
+            let currentSalaryId = null;
+            let currentSalaryCell = null;
+            let isEditing = false;
+
+            $(document).on('click', '.salary-masked', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                currentSalaryId = $(this).data('id');
+                currentSalaryCell = $(this);
+                isEditing = false;
+                $('#pinInput').val('');
+                $('#pinError').addClass('d-none');
+                pinModal.show();
+                setTimeout(() => $('#pinInput').focus(), 500);
+                return false;
+            });
+
+            $('#pinSubmitBtn').on('click', function() {
+                const pin = $('#pinInput').val();
+                if (!pin) return;
+
+                $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+                
+                $.get('@Url.Action("GetSalaryAmount", "QuickEntry")', { id: currentSalaryId, pin: pin }, function(response) {
+                    if (response.success) {
+                        if (isEditing) {
+                            pinModal.hide();
+                            openEditModal(currentSalaryId, pin);
+                        } else {
+                            const prefix = currentSalaryCell.text().startsWith('+') ? '+' : (currentSalaryCell.text().startsWith('-') ? '-' : '');
+                            currentSalaryCell.text(prefix + response.amount);
+                            currentSalaryCell.removeClass('salary-masked clickable').removeAttr('data-salary');
+                            pinModal.hide();
+                        }
+                    } else {
+                        $('#pinError').text(response.message).removeClass('d-none');
+                        $('#pinInput').val('').focus();
+                    }
+                }).always(function() {
+                    $('#pinSubmitBtn').prop('disabled', false).text('Verify');
+                });
+            });
+
+            $('#pinInput').on('keypress', function(e) {
+                if (e.which == 13) $('#pinSubmitBtn').click();
+            });
+
+            // ── Inline Category Edit ─────────────────────────
+            $(document).on('click', '.category-display.clickable', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $cell = $(this).closest('.category-cell');
+                const $display = $(this);
+                const $edit = $cell.find('.category-edit');
+                const $select = $edit.find('select');
+                const categoryId = $cell.data('category-id');
+
+                // populate options from the main category dropdown
+                $select.html($('#CategoryId').html());
+                $select.val(categoryId);
+                $select.data('original', categoryId);
+
+                $display.addClass('d-none');
+                $edit.removeClass('d-none');
+                $select.focus();
+            });
+
+            $(document).on('change', '.inline-category-select', function() {
+                const $select = $(this);
+                const $cell = $select.closest('.category-cell');
+                const $display = $cell.find('.category-display');
+                const $edit = $cell.find('.category-edit');
+                const id = $cell.data('id');
+                const newCategoryId = $select.val();
+                const originalCategoryId = $select.data('original');
+
+                if (newCategoryId === originalCategoryId || !newCategoryId) {
+                    $edit.addClass('d-none');
+                    $display.removeClass('d-none');
+                    return;
+                }
+
+                $select.prop('disabled', true);
+                
+                $.post('@Url.Action("UpdateTransactionCategory", "QuickEntry")', {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val(),
+                    id: id,
+                    categoryId: newCategoryId
+                }, function(response) {
+                    if (response.success) {
+                        $cell.data('category-id', newCategoryId);
+                        $display.find('.category-name-span').text(response.categoryName);
+                        $edit.addClass('d-none');
+                        $display.removeClass('d-none');
+                        
+                        // flash the cell green to indicate success
+                        $cell.css('background-color', '#e8f5e9');
+                        setTimeout(() => $cell.css('background-color', ''), 1000);
+                    } else {
+                        alert(response.message);
+                        $select.val(originalCategoryId);
+                        $edit.addClass('d-none');
+                        $display.removeClass('d-none');
+                    }
+                }).fail(function() {
+                    alert("An error occurred updating the category.");
+                    $select.val(originalCategoryId);
+                    $edit.addClass('d-none');
+                    $display.removeClass('d-none');
+                }).always(function() {
+                    $select.prop('disabled', false);
+                });
+            });
+
+            $(document).on('blur', '.inline-category-select', function() {
+                const $select = $(this);
+                if ($select.is(':disabled')) return; // let the ajax call handle it
+                const $cell = $select.closest('.category-cell');
+                $cell.find('.category-edit').addClass('d-none');
+                $cell.find('.category-display').removeClass('d-none');
+            });
+        });
+    </script>
+    <style>
+        .salary-masked {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .salary-masked:hover {
+            background-color: #e9ecef;
+        }
+        .clickable {
+            cursor: pointer;
+        }
+    </style>
+}
+
+<!-- PIN Auth Modal -->
+<div class="modal fade" id="pinAuthModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-body p-4 text-center">
+                <i class="bi bi-shield-lock-fill text-primary display-4 mb-3"></i>
+                <h5 class="fw-bold mb-3">Enter PIN</h5>
+                <p class="small text-muted mb-4">This transaction is protected. Please enter your PIN to view the amount.</p>
+                <div id="pinError" class="alert alert-danger small py-2 d-none mb-3"></div>
+                <div style="position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none;" aria-hidden="true">
+                    <input type="text" name="dummy_username" autocomplete="username" tabindex="-1">
+                </div>
+                <input type="password" id="pinInput" class="form-control form-control-lg text-center mb-4 rounded-3 border-2" maxlength="4" placeholder="••••" autocomplete="new-password" />
+                <div class="d-grid gap-2">
+                    <button type="button" id="pinSubmitBtn" class="btn btn-primary rounded-pill fw-bold">Verify</button>
+                    <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

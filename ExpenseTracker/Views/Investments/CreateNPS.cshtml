@@ -1,0 +1,55 @@
+@model ExpenseTracker.Models.NPS
+@{
+    ViewData["Title"] = "Add NPS";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>New NPS Investment</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="CreateNPS">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label asp-for="SchemeName" class="form-label fw-bold small text-uppercase">Scheme Name</label>
+                                <input asp-for="SchemeName" class="form-control border-warning shadow-sm rounded-3" placeholder="e.g. HDFC Pension Management" required />
+                                <span asp-validation-for="SchemeName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="TotalUnits" class="form-label fw-bold small text-uppercase">Total Units</label>
+                                <input asp-for="TotalUnits" class="form-control border-warning shadow-sm rounded-3" type="number" step="0.0001" required />
+                                <span asp-validation-for="TotalUnits" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CurrentNAV" class="form-label fw-bold small text-uppercase">Current NAV</label>
+                                <input asp-for="CurrentNAV" class="form-control border-warning shadow-sm rounded-3" type="number" step="0.0001" required />
+                                <span asp-validation-for="CurrentNAV" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-12">
+                                <label asp-for="TotalInvested" class="form-label fw-bold small text-uppercase">Total Invested Amount (All NPS)</label>
+                                <input asp-for="TotalInvested" class="form-control border-warning shadow-sm rounded-3" type="number" step="0.01" required />
+                                <span asp-validation-for="TotalInvested" class="text-danger small"></span>
+                                <div class="form-text mt-1 text-muted small">
+                                    <i class="bi bi-info-circle me-1"></i> Since NPS does not have a per-scheme invested value, enter the <strong>Total Invested across ALL your NPS schemes</strong> here. You can enter this value on any one scheme, and leave it as 0 for others.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PurchaseDate" class="form-label fw-bold small text-uppercase">As Of Date</label>
+                                <input asp-for="PurchaseDate" class="form-control border-warning shadow-sm rounded-3" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="PurchaseDate" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12 mt-4 text-end">
+                                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 me-2">Cancel</a>
+                                <button type="submit" class="btn btn-warning text-dark rounded-pill px-5 shadow">Save NPS</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
